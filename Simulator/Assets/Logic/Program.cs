@@ -4,46 +4,56 @@ using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 using Newtonsoft.Json;
 using UnityEngine;
-using Assets.Logic;
-
 
 public class Program : MonoBehaviour
 {
+    private const string SendQueueName = "controller";
+    private const string ReceiveQueueName = "simulator";
 
-	private static readonly string queueName = "simulator";
-	private static readonly string commandqueue = "controller";
-	private static readonly ConnectionFactory factory = new ConnectionFactory() {
-		HostName = "localhost",
-		VirtualHost = "/6",
-		UserName = "guest",
-		Password = "guest"
-	};
-	private static IConnection connection;
-	private IModel channel;
-	private EventingBasicConsumer simulatorConsumer;
+    private static readonly ConnectionFactory Factory = new ConnectionFactory()
+    {
+        HostName = "localhost",
+        VirtualHost = "/6",
+        UserName = "guest",
+        Password = "guest"
+    };
+    private static IConnection _connection;
+    private static IModel _channel;
+    private static EventingBasicConsumer _consumer;
 
-	// Use this for initialization
-	void Start()
+    // Use this for initialization
+    void Start()
 	{
-		if (connection == null)
-			connection = factory.CreateConnection();
-		channel = connection.CreateModel();
-		channel.QueueDeclare(queue: queueName, durable: false, exclusive: false, autoDelete: false);
-		simulatorConsumer = new EventingBasicConsumer(channel);
-		simulatorConsumer.Received += HandleControllerData;
-		channel.BasicConsume(queue: queueName, autoAck: true, consumer: simulatorConsumer);
+	    if (_connection == null)
+	        _connection = Factory.CreateConnection();
+	    _channel = _connection.CreateModel();
+	    _channel.QueueDeclare(queue: SendQueueName, durable: false, exclusive: false, autoDelete: false);
+	    _consumer = new EventingBasicConsumer(_channel);
+	    _consumer.Received += HandleControllerData;
+	    _channel.BasicConsume(queue: ReceiveQueueName, autoAck: true, consumer: _consumer);
+
+	    Send("Simulator: 6");
+    }
+
+	private void HandleControllerData(object sender, BasicDeliverEventArgs ea)
+	{
+	    Debug.Log($"Received: {Encoding.UTF8.GetString(ea.Body)}");
 	}
 
-	private void HandleControllerData(object sender, BasicDeliverEventArgs e)
+    private static void Send(string message)
+    {
+        byte[] body = Encoding.UTF8.GetBytes(message);
+        _channel.BasicPublish(exchange: "",
+            routingKey: SendQueueName,
+            basicProperties: null,
+            body: body);
+        Debug.Log($"Sent: {message}");
+    }
+
+    // Update is called once per frame
+    void Update()
 	{
-		Crossing crossing = JsonConvert.DeserializeObject<Crossing>(Encoding.UTF8.GetString((e.Body)));
-		Debug.Log(string.Format("Got: \"{0}\" from: \"{1}\"", crossing.Message, crossing.TimeStamp.ToString()));
-	}
-	
-	// Update is called once per frame
-	void Update()
-	{
-		Crossing messageBody = new Crossing() { Message = "Hoi" };
-		channel.BasicPublish(exchange: "", routingKey: queueName, mandatory: false, basicProperties: null, body: Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(messageBody)));
+		//Crossing messageBody = new Crossing() { Message = "Hoi" };
+		//channel.BasicPublish(exchange: "", routingKey: queueName, mandatory: false, basicProperties: null, body: Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(messageBody)));
 	}
 }
