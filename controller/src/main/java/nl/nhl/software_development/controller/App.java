@@ -66,8 +66,8 @@ public class App
 				catch (JsonSyntaxException e) {
 					LOGGER.error("Message is not a TrafficUpdate");
 					try {
-						Hello hello = gson.fromJson(new String(body, CHARSET), Hello.class);
-						reply = gson.toJson(new Hello("Hello from group 6")).getBytes(CHARSET);
+						Hello hello = new Hello(new String(body, CHARSET));
+						reply = "Controller 6".getBytes(CHARSET);
 						LOGGER.info(hello.getMessage());
 					} catch (JsonSyntaxException ex) {
 						LOGGER.warn("Message not a Hello");
@@ -76,8 +76,12 @@ public class App
 				String correlationId = properties.getCorrelationId();
 				String replyTo = properties.getReplyTo();
 				BasicProperties.Builder propertiesBuilder = new BasicProperties.Builder();
-				if (!correlationId.isEmpty()) propertiesBuilder.correlationId(correlationId);
-				if (replyTo.isEmpty()) replyTo = SIMULATOR_QUEUE_NAME;
+				if (correlationId != null && !correlationId.isEmpty()){
+                                    propertiesBuilder.correlationId(correlationId);
+                                }
+				if (replyTo == null || replyTo.isEmpty()) {
+                                    replyTo = SIMULATOR_QUEUE_NAME;
+                                }
 				channel.basicPublish("", replyTo, propertiesBuilder.build(), reply);
 			}
 		};
@@ -88,8 +92,8 @@ public class App
 	{
 		factory.setHost("localhost");
 		factory.setVirtualHost("/6");
-		factory.setUsername("softdev");
-		factory.setPassword("softdev");
+		factory.setUsername("guest");
+		factory.setPassword("guest");
 		LOGGER.info("Started ".concat("Program"));
 		try
 		{

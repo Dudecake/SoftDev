@@ -1,5 +1,7 @@
 package nl.nhl.software_development.controller.net;
 
+import com.google.gson.annotations.SerializedName;
+
 public class Hello
 {
     @SerializedName("Message")
