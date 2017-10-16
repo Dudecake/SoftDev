@@ -3,17 +3,13 @@ package nl.nhl.software_development.controller;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import java.util.UUID;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonSyntaxException;
-import nl.nhl.software_development.controller.crossing.Crossing;
-import nl.nhl.software_development.controller.net.Hello;
-import nl.nhl.software_development.controller.net.TrafficUpdate;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.rabbitmq.client.AMQP.BasicProperties;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
@@ -22,14 +18,17 @@ import com.rabbitmq.client.Consumer;
 import com.rabbitmq.client.DefaultConsumer;
 import com.rabbitmq.client.Envelope;
 
+import nl.nhl.software_development.controller.crossing.Crossing;
+import nl.nhl.software_development.controller.net.TrafficUpdate;
+
 public class App
 {
 	private static final Logger LOGGER = LoggerFactory.getLogger(App.class);
 	private static final Charset CHARSET = StandardCharsets.UTF_8;
-	//private static final String CORRELATIONID = UUID.randomUUID().toString();
 	private static final GsonBuilder gsonBuilder = new GsonBuilder().serializeNulls();
-	private static final String SIMULATOR_QUEUE_NAME = "simulator";
-	private static final String COMMANDQUEUE_NAME = "controller";
+	public static final String SIMULATOR_QUEUE_NAME = "simulator";
+	public static final String COMMANDQUEUE_NAME = "controller";
+
 	private static App p;
 	private static ConnectionFactory factory = new ConnectionFactory();
 	private static Connection connection = null;
@@ -43,46 +42,54 @@ public class App
 		return p;
 	}
 
-	public static GsonBuilder gsonBuilder() { return gsonBuilder; }
+	public static Connection brokerConnection()
+	{
+		return connection;
+	}
+
+	public static GsonBuilder gsonBuilder()
+	{
+		return gsonBuilder;
+	}
 
 	public App() throws IOException
 	{
 		gson = gsonBuilder.create();
 		crossing = new Crossing();
 		channel = connection.createChannel();
-		channel.queueDeclare(COMMANDQUEUE_NAME, false, false, false, null);
 		channel.basicQos(1);
+		channel.queueDeclare(COMMANDQUEUE_NAME, false, false, true, null);
 		Consumer consumer = new DefaultConsumer(channel)
 		{
 			@Override
-			public void handleDelivery(String consumerTag, Envelope envelope, BasicProperties properties, byte[] body)
-					throws IOException {
+			public void handleDelivery(String consumerTag, Envelope envelope, BasicProperties properties, byte[] body) throws IOException
+			{
 				byte[] reply = null;
-				try {
+				try
+				{
 					TrafficUpdate trafficUpdate = gson.fromJson(new String(body, CHARSET), TrafficUpdate.class);
 					crossing.handleUpdate(trafficUpdate);
-					reply = gson.toJson(new nl.nhl.software_development.controller.net.Crossing()).getBytes(CHARSET);
+					reply = gson.toJson(new nl.nhl.software_development.controller.net.CrossingUpdate()).getBytes(CHARSET);
 				}
-				catch (JsonSyntaxException e) {
+				catch (JsonSyntaxException e)
+				{
 					LOGGER.error("Message is not a TrafficUpdate");
-					try {
-						Hello hello = new Hello(new String(body, CHARSET));
-						reply = "Controller 6".getBytes(CHARSET);
-						LOGGER.info(hello.getMessage());
-					} catch (JsonSyntaxException ex) {
-						LOGGER.warn("Message not a Hello");
-					}
+					reply = "Controller 6".getBytes(CHARSET);
+					LOGGER.info(new String(body, CHARSET));
 				}
 				String correlationId = properties.getCorrelationId();
 				String replyTo = properties.getReplyTo();
 				BasicProperties.Builder propertiesBuilder = new BasicProperties.Builder();
-				if (correlationId != null && !correlationId.isEmpty()){
-                                    propertiesBuilder.correlationId(correlationId);
-                                }
-				if (replyTo == null || replyTo.isEmpty()) {
-                                    replyTo = SIMULATOR_QUEUE_NAME;
-                                }
+				if (correlationId != null && !correlationId.isEmpty())
+				{
+					propertiesBuilder.correlationId(correlationId);
+				}
+				if (replyTo == null || replyTo.isEmpty())
+				{
+					replyTo = SIMULATOR_QUEUE_NAME;
+				}
 				channel.basicPublish("", replyTo, propertiesBuilder.build(), reply);
+				channel.basicAck(envelope.getDeliveryTag(), false);
 			}
 		};
 		channel.basicConsume(COMMANDQUEUE_NAME, false, consumer);
@@ -92,8 +99,8 @@ public class App
 	{
 		factory.setHost("localhost");
 		factory.setVirtualHost("/6");
-		factory.setUsername("guest");
-		factory.setPassword("guest");
+		factory.setUsername("softdev");
+		factory.setPassword("softdev");
 		LOGGER.info("Started ".concat("Program"));
 		try
 		{
@@ -104,18 +111,11 @@ public class App
 		{
 			ex.printStackTrace();
 			System.exit(1);
-		}/*
-		Hello hello = new Hello();
-		try
-		{
-			Channel testChannel = connection.createChannel();
-			AMQP.BasicProperties properties = new AMQP.BasicProperties.Builder().correlationId(CORRELATIONID)
-					.replyTo("controller.requests").build();
-			testChannel.basicPublish("", SIMULATOR_QUEUE_NAME, properties, message.toByteArray());
-		}
-		catch (IOException ex)
-		{
-			ex.printStackTrace();
-		}*/
+		} /*
+			 * Hello hello = new Hello(); try { Channel testChannel = connection.createChannel(); AMQP.BasicProperties properties = new
+			 * AMQP.BasicProperties.Builder().correlationId(CORRELATIONID) .replyTo("controller.requests").build();
+			 * testChannel.basicPublish("", SIMULATOR_QUEUE_NAME, properties, message.toByteArray()); } catch (IOException ex) {
+			 * ex.printStackTrace(); }
+			 */
 	}
 }
