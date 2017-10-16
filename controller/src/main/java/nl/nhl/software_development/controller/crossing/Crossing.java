@@ -1,8 +1,7 @@
 package nl.nhl.software_development.controller.crossing;
 
 import java.io.IOException;
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -10,12 +9,8 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.gson.Gson;
-import com.rabbitmq.client.Channel;
-
-import nl.nhl.software_development.controller.App;
 import nl.nhl.software_development.controller.crossing.TrafficLight.Location;
-import nl.nhl.software_development.controller.crossing.TrafficLight.State;
+import nl.nhl.software_development.controller.crossing.TrafficLight.Status;
 import nl.nhl.software_development.controller.net.CrossingUpdate;
 import nl.nhl.software_development.controller.net.TrafficLightUpdate;
 import nl.nhl.software_development.controller.net.TrafficUpdate;
@@ -23,17 +18,11 @@ import nl.nhl.software_development.controller.net.TrafficUpdate;
 public class Crossing
 {
 	private static final Logger LOGGER = LoggerFactory.getLogger(Crossing.class);
-	private static final Charset CHARSET = StandardCharsets.UTF_8;
-	public static final String SIMULATOR_QUEUE_NAME = "simulator";
-
+	static ZonedDateTime updateTime;
 	private final List<TrafficLight> lights;
-	private Gson gson;
-	private Channel channel;
 
 	public Crossing() throws IOException
 	{
-		gson = App.gsonBuilder().create();
-		channel = App.brokerConnection().createChannel();
 		List<TrafficLight> lights = new ArrayList<>();
 		// Add car traffic lights
 		for (int i = 101; i < 111; i++)
@@ -43,6 +32,7 @@ public class Crossing
 			switch (i)
 			{
 			case 101:
+			case 110:
 				destinations = Arrays.asList(Location.NORTH);
 				break;
 			case 102:
@@ -63,13 +53,13 @@ public class Crossing
 			case 108:
 				location = Location.WEST;
 				destinations = Arrays.asList(Location.SOUTH);
-			case 110:
-				destinations = Arrays.asList(Location.NORTH);
 			default:
 				break;
 			}
-			lights.add(new CarTrafficLight(i, State.RED, location, destinations));
+			lights.add(new CarTrafficLight(i, Status.RED, location, destinations));
 		}
+		// Add bus traffic light
+		lights.add(new BusTrafficLight(201, Status.RED, Location.EAST, Arrays.asList(Location.WEST, Location.NORTH)));
 		// Add bike traffic lights
 		for (int i = 301; i < 306; i++)
 		{
@@ -85,7 +75,7 @@ public class Crossing
 			default:
 				break;
 			}
-			lights.add(new BikeTrafficLight(i, State.RED, location));
+			lights.add(new BikeTrafficLight(i, Status.RED, location));
 		}
 		// Add pedestrian traffic lights
 		for (int i = 401; i < 407; i++)
@@ -103,14 +93,14 @@ public class Crossing
 			default:
 				break;
 			}
-			lights.add(new BikeTrafficLight(i, State.RED, location));
+			lights.add(new BikeTrafficLight(i, Status.RED, location));
 		}
 		// Add train traffic light
-		lights.add(new TrainTrafficLight(501, State.RED, Location.SOUTH));
+		lights.add(new TrainTrafficLight(501, Status.RED, Location.SOUTH));
 		this.lights = lights;
 	}
 
-	private CrossingUpdate serialize()
+	public CrossingUpdate serialize()
 	{
 		List<TrafficLightUpdate> lightUpdates = new ArrayList<>();
 		for (TrafficLight t : lights)
@@ -120,12 +110,14 @@ public class Crossing
 		return new CrossingUpdate(lightUpdates, 1.0);
 	}
 
-	public void update() throws IOException
+	public static void preUpdate()
 	{
-		TrafficLight.preUpdate();
+		updateTime = ZonedDateTime.now();
+	}
+
+	public void update()
+	{
 		// TODO: Add logic
-		CrossingUpdate update = this.serialize();
-		channel.basicPublish("", SIMULATOR_QUEUE_NAME, null, gson.toJson(update).getBytes(CHARSET));
 	}
 
 	public void handleUpdate(TrafficUpdate trafficUpdate)

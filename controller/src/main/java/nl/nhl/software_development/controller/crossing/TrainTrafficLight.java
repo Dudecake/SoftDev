@@ -11,7 +11,7 @@ public class TrainTrafficLight extends TrafficLight
 		return origin;
 	}
 
-	public TrainTrafficLight(int id, State status, Location origin)
+	public TrainTrafficLight(int id, Status status, Location origin)
 	{
 		super(id, status);
 		this.origin = origin;

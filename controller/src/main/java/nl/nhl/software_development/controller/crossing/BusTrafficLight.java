@@ -17,7 +17,7 @@ public class BusTrafficLight extends TrafficLight
 		return destinations;
 	}
 
-	public BusTrafficLight(int id, State status, Location origin, List<Location> destinations)
+	public BusTrafficLight(int id, Status status, Location origin, List<Location> destinations)
 	{
 		super(id, status);
 		if (id > 200 || id > 300)

@@ -10,7 +10,7 @@ import nl.nhl.software_development.controller.net.TrafficLightUpdate;
 
 public abstract class TrafficLight
 {
-	enum State
+	public enum Status
 	{
 		RED, ORANGE, GREEN
 	}
@@ -21,9 +21,8 @@ public abstract class TrafficLight
 	}
 
 	protected static final Logger LOGGER = LoggerFactory.getLogger(TrafficLight.class);
-	protected static ZonedDateTime updateTime;
 	protected final int id;
-	protected State status;
+	protected Status status;
 	protected Duration cycleTime;
 	protected ZonedDateTime resetTime;
 	protected ZonedDateTime lastTime;
@@ -34,38 +33,34 @@ public abstract class TrafficLight
 		return id;
 	}
 
-	State getStatus()
+	Status getStatus()
 	{
 		return status;
 	}
 
-	void setStatus(State status)
+	void setStatus(Status status)
 	{
-		if (status == State.GREEN)
-			lastTime = updateTime;
+		if (status == Status.GREEN)
+			lastTime = Crossing.updateTime;
 		this.status = status;
 	}
 
 	int getWeight()
 	{
-		Duration delta = Duration.between(lastTime, updateTime);
+		Duration delta = Duration.between(lastTime, Crossing.updateTime);
 		return queueLength * (int)(delta.toMillis() / 2500);
 	}
 
-	public TrafficLight(int id, State status)
+	public TrafficLight(int id, Status status)
 	{
 		this.id = id;
 		this.status = status;
 	}
 
-	static void preUpdate()
-	{
-		updateTime = ZonedDateTime.now();
-	}
-
 	TrafficLightUpdate serialize()
 	{
-		TrafficLightUpdate res = new TrafficLightUpdate(id, nl.nhl.software_development.controller.net.TrafficLightUpdate.State.RED);
+		TrafficLightUpdate res = new TrafficLightUpdate(id,
+				nl.nhl.software_development.controller.net.TrafficLightUpdate.State.valueOf(status));
 
 		return res;
 	}

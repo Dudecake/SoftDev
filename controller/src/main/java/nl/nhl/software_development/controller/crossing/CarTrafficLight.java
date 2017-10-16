@@ -17,7 +17,7 @@ public class CarTrafficLight extends TrafficLight
 		return destinations;
 	}
 
-	public CarTrafficLight(int id, State status, Location origin, List<Location> destinations)
+	public CarTrafficLight(int id, Status status, Location origin, List<Location> destinations)
 	{
 		super(id, status);
 		if (id > 200)

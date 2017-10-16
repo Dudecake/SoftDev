@@ -4,7 +4,7 @@ public class BikeTrafficLight extends TrafficLight
 {
 	private final Location origin;
 
-	public BikeTrafficLight(int id, State status, Location origin)
+	public BikeTrafficLight(int id, Status status, Location origin)
 	{
 		super(id, status);
 		if (id < 300 || id > 500)
@@ -15,10 +15,25 @@ public class BikeTrafficLight extends TrafficLight
 	@Override
 	boolean interferesWith(TrafficLight other)
 	{
-		boolean res = true;
+		boolean res = false;
 		if (BikeTrafficLight.class.isInstance(other))
 		{
-			res = false;
+			if (BusTrafficLight.class.isInstance(other))
+			{
+				BusTrafficLight busTrafficLight = BusTrafficLight.class.cast(other);
+				if (busTrafficLight.getOrigin() == origin || busTrafficLight.getDestinations().contains(origin))
+				{
+					res = true;
+				}
+			}
+			if (CarTrafficLight.class.isInstance(other))
+			{
+				CarTrafficLight carTrafficLight = CarTrafficLight.class.cast(other);
+				if (carTrafficLight.getOrigin() == origin || carTrafficLight.getDestinations().contains(origin))
+				{
+					res = true;
+				}
+			}
 		}
 		return res;
 	}
