@@ -1,7 +1,6 @@
 package nl.nhl.software_development.controller.crossing;
 
-import java.io.IOException;
-import java.time.ZonedDateTime;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -9,6 +8,7 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import nl.nhl.software_development.controller.Time;
 import nl.nhl.software_development.controller.crossing.TrafficLight.Location;
 import nl.nhl.software_development.controller.crossing.TrafficLight.Status;
 import nl.nhl.software_development.controller.net.CrossingUpdate;
@@ -18,10 +18,10 @@ import nl.nhl.software_development.controller.net.TrafficUpdate;
 public class Crossing
 {
 	private static final Logger LOGGER = LoggerFactory.getLogger(Crossing.class);
-	static ZonedDateTime updateTime;
+	static Duration updateTime;
 	private final List<TrafficLight> lights;
 
-	public Crossing() throws IOException
+	public Crossing()
 	{
 		List<TrafficLight> lights = new ArrayList<>();
 		// Add car traffic lights
@@ -112,7 +112,7 @@ public class Crossing
 
 	public static void preUpdate()
 	{
-		updateTime = ZonedDateTime.now();
+		updateTime = Time.getTime();
 	}
 
 	public void update()
@@ -120,8 +120,28 @@ public class Crossing
 		// TODO: Add logic
 	}
 
+	private TrafficLight findTrafficLightById(int lightId)
+	{
+		TrafficLight res = null;
+		for (TrafficLight t : lights)
+		{
+			if (t.id == lightId)
+			{
+				res = t;
+				break;
+			}
+		}
+		return res;
+	}
+
 	public void handleUpdate(TrafficUpdate trafficUpdate)
 	{
-		// TODO: Collect updates for processing
+		TrafficLight light = findTrafficLightById(trafficUpdate.getLightId());
+		light.setQueueLength(trafficUpdate.getCount());
+		if (BusTrafficLight.class.isInstance(light))
+		{
+			BusTrafficLight busTrafficLight = BusTrafficLight.class.cast(light);
+			// busTrafficLight.set
+		}
 	}
 }

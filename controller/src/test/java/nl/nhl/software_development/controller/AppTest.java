@@ -9,6 +9,7 @@ import org.junit.jupiter.api.Test;
 /**
  * Unit test for simple App.
  */
+@SuppressWarnings("static-method")
 @Tag("fast")
 public class AppTest
 {

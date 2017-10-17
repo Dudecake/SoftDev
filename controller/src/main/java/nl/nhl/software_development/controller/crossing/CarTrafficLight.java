@@ -29,8 +29,46 @@ public class CarTrafficLight extends TrafficLight
 	@Override
 	boolean interferesWith(TrafficLight other)
 	{
-		// TODO Auto-generated method stub
-		return false;
+		boolean res = false;
+		if (BikeTrafficLight.class.isInstance(other))
+		{
+			BikeTrafficLight bikeTrafficLight = BikeTrafficLight.class.cast(other);
+			if (origin == bikeTrafficLight.getOrigin() || destinations.contains(bikeTrafficLight.getOrigin()))
+			{
+				res = true;
+			}
+		}
+		else if (BusTrafficLight.class.isInstance(other))
+		{
+			BusTrafficLight busTrafficLight = BusTrafficLight.class.cast(other);
+			locationLoop: for (Location thisDest : destinations)
+			{
+				for (Location otherDest : busTrafficLight.getDirectionRequests())
+				{
+					if (TrafficLight.crossesWith(origin, thisDest, busTrafficLight.getOrigin(), otherDest))
+					{
+						res = true;
+						break locationLoop;
+					}
+				}
+			}
+		}
+		else if (CarTrafficLight.class.isInstance(other))
+		{
+			CarTrafficLight carTrafficLight = CarTrafficLight.class.cast(other);
+			locationLoop: for (Location thisDest : destinations)
+			{
+				for (Location otherDest : carTrafficLight.getDestinations())
+				{
+					if (TrafficLight.crossesWith(origin, thisDest, carTrafficLight.getOrigin(), otherDest))
+					{
+						res = true;
+						break locationLoop;
+					}
+				}
+			}
+		}
+		return res;
 	}
 
 	@Override

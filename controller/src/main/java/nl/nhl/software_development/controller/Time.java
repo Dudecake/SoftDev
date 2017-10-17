@@ -1,9 +1,14 @@
 package nl.nhl.software_development.controller;
 
+import java.time.Duration;
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
+
 public class Time
 {
-	private static double timeScale;
-	private static double timer;
+	private static double timeScale = 1.0;
+	private static Duration time = Duration.ZERO;
+	private static LocalDateTime lastUpdate = LocalDateTime.now();
 
 	public static double getTimeScale()
 	{
@@ -15,19 +20,20 @@ public class Time
 		Time.timeScale = timeScale;
 	}
 
-	public static double getTimer()
+	public static Duration getTime()
 	{
-		return timer;
+		return time;
 	}
 
 	private Time()
 	{
-		// TODO Auto-generated constructor stub
+		// Private constructor
 	}
 
-	static void updateTime(double delta)
+	static void updateTime()
 	{
-		timer += (delta * timeScale);
+		LocalDateTime updateTime = LocalDateTime.now();
+		time = time.plus((long)(Duration.between(lastUpdate, updateTime).toMillis() * timeScale), ChronoUnit.MILLIS);
+		lastUpdate = updateTime;
 	}
-
 }

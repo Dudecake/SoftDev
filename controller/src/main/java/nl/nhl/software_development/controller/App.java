@@ -73,8 +73,7 @@ public class App implements Runnable
 		Consumer consumer = new DefaultConsumer(channel)
 		{
 			@Override
-			public void handleDelivery(String consumerTag, Envelope envelope, BasicProperties properties, byte[] body)
-					throws IOException
+			public void handleDelivery(String consumerTag, Envelope envelope, BasicProperties properties, byte[] body) throws IOException
 			{
 				try
 				{
@@ -95,6 +94,7 @@ public class App implements Runnable
 	@Override
 	public void run()
 	{
+		Time.updateTime();
 		Crossing.preUpdate();
 		crossing.update();
 		Builder propertiesBuilder = new Builder();
@@ -102,8 +102,7 @@ public class App implements Runnable
 			propertiesBuilder.correlationId(lastCorrelationId);
 		try
 		{
-			channel.basicPublish("", SIMULATOR_QUEUE_NAME, propertiesBuilder.build(),
-					gson.toJson(crossing.serialize()).getBytes(CHARSET));
+			channel.basicPublish("", SIMULATOR_QUEUE_NAME, propertiesBuilder.build(), gson.toJson(crossing.serialize()).getBytes(CHARSET));
 		}
 		catch (IOException ex)
 		{

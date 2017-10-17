@@ -6,7 +6,7 @@ import com.google.gson.annotations.SerializedName;
 
 public class TrafficUpdate
 {
-	enum DirectionRequest
+	public enum DirectionRequest
 	{
 		STRAIGHT(2), LEFT(3), RIGHT(4);
 		private final int direction;
@@ -25,4 +25,24 @@ public class TrafficUpdate
 	private int count;
 	@SerializedName("DirectionRequests")
 	private List<DirectionRequest> directionRequests;
+
+	public double getSpeed()
+	{
+		return speed;
+	}
+
+	public int getLightId()
+	{
+		return lightId;
+	}
+
+	public int getCount()
+	{
+		return count;
+	}
+
+	public List<DirectionRequest> getDirectionRequests()
+	{
+		return directionRequests;
+	}
 }

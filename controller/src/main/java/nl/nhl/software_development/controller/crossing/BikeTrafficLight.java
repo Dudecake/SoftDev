@@ -4,6 +4,11 @@ public class BikeTrafficLight extends TrafficLight
 {
 	private final Location origin;
 
+	Location getOrigin()
+	{
+		return origin;
+	}
+
 	public BikeTrafficLight(int id, Status status, Location origin)
 	{
 		super(id, status);
