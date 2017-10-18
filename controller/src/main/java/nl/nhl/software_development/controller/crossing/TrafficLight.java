@@ -3,18 +3,29 @@ package nl.nhl.software_development.controller.crossing;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 import java.time.Duration;
+import java.util.Comparator;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import nl.nhl.software_development.controller.Time;
 import nl.nhl.software_development.controller.net.TrafficLightUpdate;
 import nl.nhl.software_development.controller.net.TrafficLightUpdate.State;
 
-public abstract class TrafficLight
+public abstract class TrafficLight implements Comparable<TrafficLight>
 {
 	public enum Status
 	{
 		RED, ORANGE, GREEN
+	}
+
+	static class WeightComparator implements Comparator<TrafficLight>
+	{
+		@Override
+		public int compare(TrafficLight o1, TrafficLight o2)
+		{
+			return (o1.getWeight() - o2.getWeight());
+		}
 	}
 
 	enum Location
@@ -61,11 +72,13 @@ public abstract class TrafficLight
 		return status;
 	}
 
-	void setStatus(Status status)
+	Status setStatus(Status status)
 	{
 		if (status == Status.GREEN)
 			lastTime = Crossing.updateTime;
-		this.status = status;
+		if (canReset(Time.getTime()))
+			this.status = status;
+		return this.status;
 	}
 
 	int getQueueLength()
@@ -107,6 +120,12 @@ public abstract class TrafficLight
 	public boolean equals(TrafficLight other)
 	{
 		return this.id == other.id;
+	}
+
+	@Override
+	public int compareTo(TrafficLight other)
+	{
+		return this.id - other.id;
 	}
 
 	protected static boolean crossesWith(Location originA, Location destA, Location originB, Location destB)

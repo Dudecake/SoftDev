@@ -40,6 +40,14 @@ public class App implements Runnable
 	private static ConnectionFactory factory = new ConnectionFactory();
 	private static Connection connection = null;
 
+	static
+	{
+		factory.setHost("localhost");
+		factory.setVirtualHost("/6");
+		factory.setUsername("softdev");
+		factory.setPassword("softdev");
+	}
+
 	private Gson gson;
 	private Crossing crossing;
 	private Channel channel;
@@ -67,7 +75,7 @@ public class App implements Runnable
 		channel = connection.createChannel();
 		lastCorrelationId = "";
 		channel.basicQos(1);
-		Map<String, Object> args = new HashMap<>();
+		Map<String, Object> args = new HashMap<>(1);
 		args.put("x-message-ttl", 5000);
 		channel.queueDeclare(COMMANDQUEUE_NAME, false, false, true, args);
 		Consumer consumer = new DefaultConsumer(channel)
@@ -112,10 +120,6 @@ public class App implements Runnable
 
 	public static void main(String[] args)
 	{
-		factory.setHost("localhost");
-		factory.setVirtualHost("/6");
-		factory.setUsername("softdev");
-		factory.setPassword("softdev");
 		executor = Executors.newSingleThreadScheduledExecutor();
 		try
 		{

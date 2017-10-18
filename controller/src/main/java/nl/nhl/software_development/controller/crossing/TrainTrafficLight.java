@@ -19,6 +19,12 @@ public class TrainTrafficLight extends TrafficLight
 	}
 
 	@Override
+	int getWeight()
+	{
+		return queueLength == 0 ? 0 : Short.MAX_VALUE;
+	}
+
+	@Override
 	boolean interferesWith(TrafficLight other)
 	{
 		boolean res = false;

@@ -11,6 +11,7 @@ import org.slf4j.LoggerFactory;
 import nl.nhl.software_development.controller.Time;
 import nl.nhl.software_development.controller.crossing.TrafficLight.Location;
 import nl.nhl.software_development.controller.crossing.TrafficLight.Status;
+import nl.nhl.software_development.controller.crossing.TrafficLight.WeightComparator;
 import nl.nhl.software_development.controller.net.CrossingUpdate;
 import nl.nhl.software_development.controller.net.TrafficLightUpdate;
 import nl.nhl.software_development.controller.net.TrafficUpdate;
@@ -18,12 +19,17 @@ import nl.nhl.software_development.controller.net.TrafficUpdate;
 public class Crossing
 {
 	private static final Logger LOGGER = LoggerFactory.getLogger(Crossing.class);
+	private static final WeightComparator WEIGHT_COMPARATOR = new WeightComparator();
 	static Duration updateTime;
 	private final List<TrafficLight> lights;
+	private List<TrafficLight> workLights;
+	private Object lock;
 
 	public Crossing()
 	{
 		List<TrafficLight> lights = new ArrayList<>();
+		workLights = new ArrayList<>();
+		lock = new Object();
 		// Add car traffic lights
 		for (int i = 101; i < 111; i++)
 		{
@@ -117,7 +123,51 @@ public class Crossing
 
 	public void update()
 	{
-		// TODO: Add logic
+		synchronized (lock)
+		{
+			workLights.clear();
+			workLights.addAll(lights);
+			workLights.sort(WEIGHT_COMPARATOR);
+			if (workLights.get(0).getWeight() == Short.MAX_VALUE && workLights.get(0).getStatus() != Status.GREEN)
+			{
+				TrainTrafficLight trainTrafficLight = TrainTrafficLight.class.cast(workLights.get(0));
+				for (int i = 1; i < workLights.size();)
+				{
+					if (workLights.get(i).interferesWith(trainTrafficLight))
+					{
+						workLights.get(i).setStatus(Status.RED);
+						workLights.remove(i);
+					}
+					else
+					{
+						i++;
+					}
+				}
+			}
+			List<TrafficLight> greenLights = new ArrayList<>();
+			List<TrafficLight> interferingLights = new ArrayList<>();
+			TrafficLight workLight;
+			lightTrimLoop: for (int i = 1; i < workLights.size(); i++)
+			{
+				workLight = workLights.get(i);
+				for (TrafficLight t : greenLights)
+				{
+					if (workLight.interferesWith(t))
+					{
+						interferingLights.add(t);
+						// if (workLight.compareTo(t) < 0)
+						// {
+						//
+						// }
+						continue lightTrimLoop;
+					}
+
+				}
+				if (workLight.getStatus() != Status.RED)
+					greenLights.add(workLight);
+			}
+			// TODO: Add logic
+		}
 	}
 
 	private TrafficLight findTrafficLightById(int lightId)
@@ -136,12 +186,15 @@ public class Crossing
 
 	public void handleUpdate(TrafficUpdate trafficUpdate)
 	{
-		TrafficLight light = findTrafficLightById(trafficUpdate.getLightId());
-		light.setQueueLength(trafficUpdate.getCount());
-		if (BusTrafficLight.class.isInstance(light))
+		synchronized (lock)
 		{
-			BusTrafficLight busTrafficLight = BusTrafficLight.class.cast(light);
-			// busTrafficLight.set
+			TrafficLight light = findTrafficLightById(trafficUpdate.getLightId());
+			light.setQueueLength(trafficUpdate.getCount());
+			if (BusTrafficLight.class.isInstance(light))
+			{
+				BusTrafficLight busTrafficLight = BusTrafficLight.class.cast(light);
+				busTrafficLight.setDirectionRequests(trafficUpdate.getDirectionRequests());
+			}
 		}
 	}
 }
