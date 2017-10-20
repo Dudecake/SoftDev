@@ -52,7 +52,7 @@ public class BusTrafficLight extends TrafficLight
 	public BusTrafficLight(int id, Status status, Location origin, List<Location> destinations)
 	{
 		super(id, status);
-		if (id > 200 || id > 300)
+		if (id < 200 || id > 300)
 			throw new IllegalArgumentException("id doesn't correspond with a bus traffic light");
 		this.origin = origin;
 		this.destinations = destinations;

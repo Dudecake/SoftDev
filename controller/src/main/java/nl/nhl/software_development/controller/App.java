@@ -9,6 +9,13 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.CommandLineParser;
+import org.apache.commons.cli.DefaultParser;
+import org.apache.commons.cli.HelpFormatter;
+import org.apache.commons.cli.Option;
+import org.apache.commons.cli.Options;
+import org.apache.commons.cli.ParseException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,14 +46,6 @@ public class App implements Runnable
 	private static App p;
 	private static ConnectionFactory factory = new ConnectionFactory();
 	private static Connection connection = null;
-
-	static
-	{
-		factory.setHost("localhost");
-		factory.setVirtualHost("/6");
-		factory.setUsername("softdev");
-		factory.setPassword("softdev");
-	}
 
 	private Gson gson;
 	private Crossing crossing;
@@ -120,12 +119,39 @@ public class App implements Runnable
 
 	public static void main(String[] args)
 	{
+		Options options = new Options();
+		options.addOption(Option.builder("h").longOpt("host").hasArg().argName("remote host").desc("Set remote host").build());
+		// options.addOption("h", "host", true, "Set remote host");
+		options.addOption(Option.builder("v").longOpt("vhost").hasArg().argName("virtual host").desc("Set vhost to use").build());
+		options.addOption(Option.builder("u").longOpt("user").hasArg().argName("username").desc("User for login").build());
+		options.addOption(Option.builder("p").longOpt("password").hasArg().argName("password").desc("Password to use when connecting to server").build());
+		options.addOption(Option.builder("?").longOpt("help").desc("Print help message").build());
+
+		CommandLineParser parser = new DefaultParser();
 		executor = Executors.newSingleThreadScheduledExecutor();
 		try
 		{
+			CommandLine line = parser.parse(options, args);
+			if (line.hasOption('?'))
+			{
+				HelpFormatter formatter = new HelpFormatter();
+				formatter.printHelp("Program", options, true);
+				System.exit(0);
+			}
+			factory.setHost(line.getOptionValue('h', "localhost"));
+			factory.setVirtualHost(line.getOptionValue('v', "/6"));
+			factory.setUsername(line.getOptionValue('u', "softdev"));
+			factory.setPassword(line.getOptionValue('p', "softdev"));
 			connection = factory.newConnection();
 			p = new App();
 			executor.scheduleAtFixedRate(p, 100, 16, TimeUnit.MILLISECONDS);
+		}
+		catch (ParseException ex)
+		{
+			System.out.println(ex.getLocalizedMessage());
+			HelpFormatter formatter = new HelpFormatter();
+			formatter.printHelp("Program", options, true);
+			System.exit(0);
 		}
 		catch (Exception ex)
 		{
