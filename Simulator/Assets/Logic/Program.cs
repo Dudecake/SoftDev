@@ -4,6 +4,7 @@ using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 using UnityEngine;
 using System.Collections.Generic;
+using Assets.Logic.Models;
 
 
 public class Program : MonoBehaviour
@@ -42,7 +43,11 @@ public class Program : MonoBehaviour
 
     private void HandleControllerData(object sender, BasicDeliverEventArgs ea)
     {
-        Debug.Log($"Received: {Encoding.UTF8.GetString(ea.Body)}");
+        string message = Encoding.UTF8.GetString(ea.Body);
+        Debug.Log($"Received: {message}");
+
+        Assets.Logic.Models.Light[] Lights = JsonUtility.FromJson<Assets.Logic.Models.Light[]>(message);
+        Debug.Log($"Received: {JsonUtility.ToJson(Lights)}");
     }
 
     private static void Send(string message)
