@@ -2,8 +2,9 @@
 using System.Text;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
-using Newtonsoft.Json;
 using UnityEngine;
+using System.Collections.Generic;
+
 
 public class Program : MonoBehaviour
 {
@@ -17,28 +18,32 @@ public class Program : MonoBehaviour
         UserName = "guest",
         Password = "guest"
     };
+
     private static IConnection _connection;
     private static IModel _channel;
     private static EventingBasicConsumer _consumer;
 
     // Use this for initialization
-    void Start()
-	{
-	    if (_connection == null)
-	        _connection = Factory.CreateConnection();
-	    _channel = _connection.CreateModel();
-	    _channel.QueueDeclare(queue: SendQueueName, durable: false, exclusive: false, autoDelete: false);
-	    _consumer = new EventingBasicConsumer(_channel);
-	    _consumer.Received += HandleControllerData;
-	    _channel.BasicConsume(queue: ReceiveQueueName, autoAck: true, consumer: _consumer);
+    private void Start()
+    {
+        if (_connection == null)
+            _connection = Factory.CreateConnection();
+        _channel = _connection.CreateModel();
+        var args = new Dictionary<string, object>();
+        args.Add("x-message-ttl", 10000);
+        _channel.QueueDeclare(SendQueueName, false, false, true, args);
+        _channel.QueueDeclare(ReceiveQueueName, false, false, true, args);
+        _consumer = new EventingBasicConsumer(_channel);
+        _consumer.Received += HandleControllerData;
+        _channel.BasicConsume(queue: ReceiveQueueName, autoAck: true, consumer: _consumer);
 
-	    Send("Simulator: 6");
+        Send("Simulator: 6");
     }
 
-	private void HandleControllerData(object sender, BasicDeliverEventArgs ea)
-	{
-	    Debug.Log($"Received: {Encoding.UTF8.GetString(ea.Body)}");
-	}
+    private void HandleControllerData(object sender, BasicDeliverEventArgs ea)
+    {
+        Debug.Log($"Received: {Encoding.UTF8.GetString(ea.Body)}");
+    }
 
     private static void Send(string message)
     {
@@ -51,9 +56,9 @@ public class Program : MonoBehaviour
     }
 
     // Update is called once per frame
-    void Update()
-	{
-		//Crossing messageBody = new Crossing() { Message = "Hoi" };
-		//channel.BasicPublish(exchange: "", routingKey: queueName, mandatory: false, basicProperties: null, body: Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(messageBody)));
-	}
+    private void Update()
+    {
+        //Crossing messageBody = new Crossing() { Message = "Hoi" };
+        //channel.BasicPublish(exchange: "", routingKey: queueName, mandatory: false, basicProperties: null, body: Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(messageBody)));
+    }
 }
