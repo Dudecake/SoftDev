@@ -72,6 +72,21 @@ public class CarTrafficLight extends TrafficLight
 	}
 
 	@Override
+	boolean interferesWith(TrafficLightList others)
+	{
+		boolean res = false;
+		for (TrafficLight t : others)
+		{
+			if (interferesWith(t))
+			{
+				res = true;
+				break;
+			}
+		}
+		return res;
+	}
+
+	@Override
 	boolean interferesWith(TrainTrafficLight other)
 	{
 		boolean res = false;

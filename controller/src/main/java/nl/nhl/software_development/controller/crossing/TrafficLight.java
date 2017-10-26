@@ -101,6 +101,9 @@ public abstract class TrafficLight implements Comparable<TrafficLight>
 	{
 		this.id = id;
 		this.status = status;
+		lastTime = Duration.ZERO;
+		cycleTime = Duration.ofSeconds(30);
+		resetTime = Duration.ZERO;
 	}
 
 	TrafficLightUpdate serialize()
@@ -112,7 +115,7 @@ public abstract class TrafficLight implements Comparable<TrafficLight>
 	boolean canReset(Duration time)
 	{
 		boolean res = false;
-		if (time.compareTo(resetTime) > 0)
+		if (time.compareTo(resetTime) >= 0)
 			res = true;
 		return res;
 	}
@@ -144,6 +147,8 @@ public abstract class TrafficLight implements Comparable<TrafficLight>
 	}
 
 	abstract boolean interferesWith(TrafficLight other);
+
+	abstract boolean interferesWith(TrafficLightList others);
 
 	abstract boolean interferesWith(TrainTrafficLight other);
 }

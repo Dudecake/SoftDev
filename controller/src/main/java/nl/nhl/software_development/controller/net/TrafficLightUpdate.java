@@ -32,6 +32,16 @@ public class TrafficLightUpdate
 	@SerializedName("State")
 	private State state;
 
+	public int getId()
+	{
+		return id;
+	}
+
+	public State getState()
+	{
+		return state;
+	}
+
 	public TrafficLightUpdate()
 	{
 		id = 101;
