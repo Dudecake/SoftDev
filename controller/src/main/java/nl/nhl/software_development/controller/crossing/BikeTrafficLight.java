@@ -31,13 +31,28 @@ public class BikeTrafficLight extends TrafficLight
 					res = true;
 				}
 			}
-			if (CarTrafficLight.class.isInstance(other))
+			else if (CarTrafficLight.class.isInstance(other))
 			{
 				CarTrafficLight carTrafficLight = CarTrafficLight.class.cast(other);
 				if (carTrafficLight.getOrigin() == origin || carTrafficLight.getDestinations().contains(origin))
 				{
 					res = true;
 				}
+			}
+		}
+		return res;
+	}
+
+	@Override
+	boolean interferesWith(TrafficLightList others)
+	{
+		boolean res = false;
+		for (TrafficLight t : others)
+		{
+			if (interferesWith(t))
+			{
+				res = true;
+				break;
 			}
 		}
 		return res;

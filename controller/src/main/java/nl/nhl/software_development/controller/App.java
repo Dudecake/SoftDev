@@ -80,14 +80,19 @@ public class App implements Runnable
 		Consumer consumer = new DefaultConsumer(channel)
 		{
 			@Override
-			public void handleDelivery(String consumerTag, Envelope envelope, BasicProperties properties, byte[] body) throws IOException
+			public void handleDelivery(String consumerTag, Envelope envelope, BasicProperties properties, byte[] body)
+					throws IOException
 			{
 				try
 				{
+					if (properties.getCorrelationId() != null)
+					{
+						lastCorrelationId = properties.getCorrelationId();
+					}
 					TrafficUpdate trafficUpdate = gson.fromJson(new String(body, CHARSET), TrafficUpdate.class);
 					crossing.handleUpdate(trafficUpdate);
 				}
-				catch (JsonSyntaxException e)
+				catch (JsonSyntaxException ex)
 				{
 					LOGGER.error("Message is not a TrafficUpdate");
 					LOGGER.debug("Got: ".concat(new String(body, CHARSET)));
@@ -109,7 +114,8 @@ public class App implements Runnable
 			propertiesBuilder.correlationId(lastCorrelationId);
 		try
 		{
-			channel.basicPublish("", SIMULATOR_QUEUE_NAME, propertiesBuilder.build(), gson.toJson(crossing.serialize()).getBytes(CHARSET));
+			channel.basicPublish("", SIMULATOR_QUEUE_NAME, propertiesBuilder.build(),
+					gson.toJson(crossing.serialize()).getBytes(CHARSET));
 		}
 		catch (IOException ex)
 		{
@@ -120,11 +126,14 @@ public class App implements Runnable
 	public static void main(String[] args)
 	{
 		Options options = new Options();
-		options.addOption(Option.builder("h").longOpt("host").hasArg().argName("remote host").desc("Set remote host").build());
-		// options.addOption("h", "host", true, "Set remote host");
-		options.addOption(Option.builder("v").longOpt("vhost").hasArg().argName("virtual host").desc("Set vhost to use").build());
-		options.addOption(Option.builder("u").longOpt("user").hasArg().argName("username").desc("User for login").build());
-		options.addOption(Option.builder("p").longOpt("password").hasArg().argName("password").desc("Password to use when connecting to server").build());
+		options.addOption(
+				Option.builder("h").longOpt("host").hasArg().argName("remote host").desc("Set remote host").build());
+		options.addOption(
+				Option.builder("v").longOpt("vhost").hasArg().argName("virtual host").desc("Set vhost to use").build());
+		options.addOption(
+				Option.builder("u").longOpt("user").hasArg().argName("username").desc("User for login").build());
+		options.addOption(Option.builder("p").longOpt("password").hasArg().argName("password")
+				.desc("Password to use when connecting to server").build());
 		options.addOption(Option.builder("?").longOpt("help").desc("Print help message").build());
 
 		CommandLineParser parser = new DefaultParser();

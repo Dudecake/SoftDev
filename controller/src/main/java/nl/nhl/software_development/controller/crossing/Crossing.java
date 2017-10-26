@@ -1,9 +1,9 @@
 package nl.nhl.software_development.controller.crossing;
 
 import java.time.Duration;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,22 +13,22 @@ import nl.nhl.software_development.controller.crossing.TrafficLight.Location;
 import nl.nhl.software_development.controller.crossing.TrafficLight.Status;
 import nl.nhl.software_development.controller.crossing.TrafficLight.WeightComparator;
 import nl.nhl.software_development.controller.net.CrossingUpdate;
-import nl.nhl.software_development.controller.net.TrafficLightUpdate;
 import nl.nhl.software_development.controller.net.TrafficUpdate;
 
 public class Crossing
 {
+	@SuppressWarnings("unused")
 	private static final Logger LOGGER = LoggerFactory.getLogger(Crossing.class);
 	private static final WeightComparator WEIGHT_COMPARATOR = new WeightComparator();
 	static Duration updateTime;
-	private final List<TrafficLight> lights;
-	private List<TrafficLight> workLights;
+	private final TrafficLightList lights;
+	private TrafficLightList workLights;
 	private Object lock;
 
 	public Crossing()
 	{
-		List<TrafficLight> lights = new ArrayList<>();
-		workLights = new ArrayList<>();
+		TrafficLightList lights = new TrafficLightList();
+		workLights = new TrafficLightList();
 		lock = new Object();
 		// Add car traffic lights
 		for (int i = 101; i < 111; i++)
@@ -103,22 +103,24 @@ public class Crossing
 		}
 		// Add train traffic light
 		lights.add(new TrainTrafficLight(501, Status.RED, Location.SOUTH));
+		lights.sort(null);
 		this.lights = lights;
 	}
 
 	public CrossingUpdate serialize()
 	{
-		List<TrafficLightUpdate> lightUpdates = new ArrayList<>();
-		for (TrafficLight t : lights)
-		{
-			lightUpdates.add(t.serialize());
-		}
-		return new CrossingUpdate(lightUpdates, 1.0);
+		return new CrossingUpdate(lights.parallelStream().map(TrafficLight::serialize).collect(Collectors.toList()),
+				1.0);
 	}
 
 	public static void preUpdate()
 	{
 		updateTime = Time.getTime();
+	}
+
+	static void preUpdate(Duration time)
+	{
+		updateTime = time;
 	}
 
 	public void update()
@@ -144,8 +146,8 @@ public class Crossing
 					}
 				}
 			}
-			List<TrafficLight> greenLights = new ArrayList<>();
-			List<TrafficLight> interferingLights = new ArrayList<>();
+			TrafficLightList greenLights = new TrafficLightList();
+			TrafficLightList interferingLights = new TrafficLightList();
 			TrafficLight workLight;
 			lightTrimLoop: for (int i = 1; i < workLights.size(); i++)
 			{
@@ -161,34 +163,36 @@ public class Crossing
 						// }
 						continue lightTrimLoop;
 					}
-
 				}
 				if (workLight.getStatus() != Status.RED)
 					greenLights.add(workLight);
 			}
+			if (greenLights.isEmpty())
+			{
+				for (int i = 0; i < workLights.size();)
+				{
+					workLight = workLights.get(i);
+					if (!workLight.interferesWith(greenLights))
+					{
+						workLight.setStatus(Status.GREEN);
+						greenLights.add(workLight);
+						workLights.remove(i);
+					}
+					else
+					{
+						i++;
+					}
+				}
+			}
 			// TODO: Add logic
 		}
-	}
-
-	private TrafficLight findTrafficLightById(int lightId)
-	{
-		TrafficLight res = null;
-		for (TrafficLight t : lights)
-		{
-			if (t.id == lightId)
-			{
-				res = t;
-				break;
-			}
-		}
-		return res;
 	}
 
 	public void handleUpdate(TrafficUpdate trafficUpdate)
 	{
 		synchronized (lock)
 		{
-			TrafficLight light = findTrafficLightById(trafficUpdate.getLightId());
+			TrafficLight light = lights.getId(trafficUpdate.getLightId());
 			light.setQueueLength(trafficUpdate.getCount());
 			if (BusTrafficLight.class.isInstance(light))
 			{

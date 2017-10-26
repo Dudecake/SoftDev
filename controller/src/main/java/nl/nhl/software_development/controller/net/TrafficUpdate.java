@@ -26,6 +26,19 @@ public class TrafficUpdate
 	@SerializedName("DirectionRequests")
 	private List<DirectionRequest> directionRequests;
 
+	public TrafficUpdate()
+	{
+		// TODO Auto-generated constructor stub
+	}
+
+	public TrafficUpdate(int lightId, int count, List<DirectionRequest> directionRequests, double speed)
+	{
+		this.speed = speed;
+		this.lightId = lightId;
+		this.count = count;
+		this.directionRequests = directionRequests;
+	}
+
 	public double getSpeed()
 	{
 		return speed;
