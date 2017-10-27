@@ -21,7 +21,7 @@ public class BikeTrafficLight extends TrafficLight
 	boolean interferesWith(TrafficLight other)
 	{
 		boolean res = false;
-		if (BikeTrafficLight.class.isInstance(other))
+		if (!BikeTrafficLight.class.isInstance(other))
 		{
 			if (BusTrafficLight.class.isInstance(other))
 			{

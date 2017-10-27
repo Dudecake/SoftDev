@@ -21,7 +21,8 @@ public class TrafficLightTest
 	public void testIntersection()
 	{
 		CarTrafficLight lightA = new CarTrafficLight(103, Status.RED, Location.NORTH, Arrays.asList(Location.EAST));
-		CarTrafficLight lightB = new CarTrafficLight(106, Status.RED, Location.SOUTH, Arrays.asList(Location.NORTH, Location.EAST));
+		CarTrafficLight lightB = new CarTrafficLight(106, Status.RED, Location.SOUTH,
+				Arrays.asList(Location.NORTH, Location.EAST));
 		assertTrue(lightA.interferesWith(lightB));
 	}
 
@@ -41,6 +42,15 @@ public class TrafficLightTest
 		CarTrafficLight lightA = new CarTrafficLight(103, Status.RED, Location.NORTH, Arrays.asList(Location.EAST));
 		CarTrafficLight lightB = new CarTrafficLight(106, Status.RED, Location.SOUTH, Arrays.asList(Location.WEST));
 		assertFalse(lightA.interferesWith(lightB));
+	}
+
+	@Test
+	@DisplayName("Test intersection car")
+	public void testInterSectionCar()
+	{
+		CarTrafficLight lightA = new CarTrafficLight(107, Status.RED, Location.SOUTH, Arrays.asList(Location.WEST));
+		CarTrafficLight lightB = new CarTrafficLight(101, Status.RED, Location.NORTH, Arrays.asList(Location.WEST));
+		assertTrue(lightA.interferesWith(lightB));
 	}
 
 	@Test

@@ -19,6 +19,15 @@ public abstract class TrafficLight implements Comparable<TrafficLight>
 		RED, ORANGE, GREEN
 	}
 
+	static class InverseWeightComparator implements Comparator<TrafficLight>
+	{
+		@Override
+		public int compare(TrafficLight o1, TrafficLight o2)
+		{
+			return (o2.getWeight() - o1.getWeight());
+		}
+	}
+
 	static class WeightComparator implements Comparator<TrafficLight>
 	{
 		@Override
@@ -93,8 +102,8 @@ public abstract class TrafficLight implements Comparable<TrafficLight>
 
 	int getWeight()
 	{
-		Duration delta = lastTime.minus(Crossing.updateTime);
-		return queueLength * (int)(delta.toMillis() / 2500.0);
+		Duration delta = Crossing.updateTime.minus(lastTime);
+		return (int)(queueLength * delta.toMillis());
 	}
 
 	public TrafficLight(int id, Status status)
@@ -134,8 +143,9 @@ public abstract class TrafficLight implements Comparable<TrafficLight>
 	protected static boolean crossesWith(Location originA, Location destA, Location originB, Location destB)
 	{
 		boolean res = false;
-		if (originA != destB && originB != destA)
+		if (originA != originB && originA != destB && originB != destA)
 		{
+			// FIXME: long curves don't get identified as interfering
 			Line2D lineA = new Line2D.Float(originA.asPoint2d(), destA.asPoint2d());
 			Line2D lineB = new Line2D.Float(originB.asPoint2d(), destB.asPoint2d());
 			if (lineA.intersectsLine(lineB))
@@ -144,6 +154,12 @@ public abstract class TrafficLight implements Comparable<TrafficLight>
 			}
 		}
 		return res;
+	}
+
+	@Override
+	public String toString()
+	{
+		return String.format("TrafficLight id: %i", id);
 	}
 
 	abstract boolean interferesWith(TrafficLight other);
