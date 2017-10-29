@@ -32,6 +32,7 @@ import com.rabbitmq.client.DefaultConsumer;
 import com.rabbitmq.client.Envelope;
 
 import nl.nhl.software_development.controller.crossing.Crossing;
+import nl.nhl.software_development.controller.net.CrossingUpdate;
 import nl.nhl.software_development.controller.net.TrafficUpdate;
 
 public class App implements Runnable
@@ -51,6 +52,7 @@ public class App implements Runnable
 	private Crossing crossing;
 	private Channel channel;
 	private String lastCorrelationId;
+	private CrossingUpdate lastUpdate;
 
 	public static App instance()
 	{
@@ -73,6 +75,7 @@ public class App implements Runnable
 		crossing = new Crossing();
 		channel = connection.createChannel();
 		lastCorrelationId = "";
+		lastUpdate = new CrossingUpdate();
 		channel.basicQos(1);
 		Map<String, Object> args = new HashMap<>(1);
 		args.put("x-message-ttl", 10000);
@@ -91,6 +94,7 @@ public class App implements Runnable
 						lastCorrelationId = properties.getCorrelationId();
 					}
 					TrafficUpdate trafficUpdate = gson.fromJson(new String(body, CHARSET), TrafficUpdate.class);
+					LOGGER.info("Got update message");
 					crossing.handleUpdate(trafficUpdate);
 				}
 				catch (JsonSyntaxException ex)
@@ -113,14 +117,19 @@ public class App implements Runnable
 		Builder propertiesBuilder = new Builder();
 		if (!lastCorrelationId.isEmpty())
 			propertiesBuilder.correlationId(lastCorrelationId);
-		try
+		CrossingUpdate crossingUpdate = crossing.serialize();
+		if (!lastUpdate.equals(crossingUpdate))
 		{
-			channel.basicPublish("", SIMULATOR_QUEUE_NAME, propertiesBuilder.build(),
-					gson.toJson(crossing.serialize()).getBytes(CHARSET));
-		}
-		catch (IOException ex)
-		{
-			LOGGER.error("Failed to send message", ex);
+			try
+			{
+				channel.basicPublish("", SIMULATOR_QUEUE_NAME, propertiesBuilder.build(),
+						gson.toJson(crossingUpdate).getBytes(CHARSET));
+			}
+			catch (IOException ex)
+			{
+				LOGGER.error("Failed to send message", ex);
+			}
+			lastUpdate = crossingUpdate;
 		}
 	}
 

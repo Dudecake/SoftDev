@@ -129,9 +129,18 @@ public abstract class TrafficLight implements Comparable<TrafficLight>
 		return res;
 	}
 
-	public boolean equals(TrafficLight other)
+	@Override
+	public boolean equals(Object obj)
 	{
-		return this.id == other.id;
+		boolean res = false;
+		if (TrafficLight.class.isInstance(obj))
+		{
+			TrafficLight other = TrafficLight.class.cast(obj);
+			res = this.id == other.id;
+		}
+		else
+			res = super.equals(obj);
+		return res;
 	}
 
 	@Override

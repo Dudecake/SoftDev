@@ -53,4 +53,18 @@ public class TrafficLightUpdate
 		this.id = id;
 		this.state = state;
 	}
+
+	@Override
+	public boolean equals(Object obj)
+	{
+		boolean res = false;
+		if (TrafficLightUpdate.class.isInstance(obj))
+		{
+			TrafficLightUpdate other = TrafficLightUpdate.class.cast(obj);
+			res = (this.id == other.id && this.state == other.state);
+		}
+		else
+			res = super.equals(obj);
+		return res;
+	}
 }
