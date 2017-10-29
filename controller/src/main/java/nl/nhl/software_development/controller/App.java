@@ -75,8 +75,9 @@ public class App implements Runnable
 		lastCorrelationId = "";
 		channel.basicQos(1);
 		Map<String, Object> args = new HashMap<>(1);
-		args.put("x-message-ttl", 5000);
+		args.put("x-message-ttl", 10000);
 		channel.queueDeclare(COMMANDQUEUE_NAME, false, false, true, args);
+		channel.queueDeclare(SIMULATOR_QUEUE_NAME, false, false, false, null);
 		Consumer consumer = new DefaultConsumer(channel)
 		{
 			@Override
