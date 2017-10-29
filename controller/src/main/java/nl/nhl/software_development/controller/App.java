@@ -77,7 +77,7 @@ public class App implements Runnable
 		Map<String, Object> args = new HashMap<>(1);
 		args.put("x-message-ttl", 10000);
 		channel.queueDeclare(COMMANDQUEUE_NAME, false, false, true, args);
-		channel.queueDeclare(SIMULATOR_QUEUE_NAME, false, false, false, null);
+		channel.queueDeclare(SIMULATOR_QUEUE_NAME, false, false, true, args);
 		Consumer consumer = new DefaultConsumer(channel)
 		{
 			@Override
