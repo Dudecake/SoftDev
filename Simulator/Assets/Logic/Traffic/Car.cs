@@ -6,9 +6,9 @@ namespace Assets.Logic.Traffic
     {
         private void Update()
         {
-            if (this.ParentLight?.Status == 2)
+            if (!this.Leaving && this.ParentLight?.Status == 2)
             {
-                float time = Time.time;
+                StartCoroutine(this.Leave(2));
             }
         }
     }

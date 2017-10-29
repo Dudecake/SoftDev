@@ -31,7 +31,6 @@ namespace Assets.Logic.Lights
         public void RemoveTrafficObject(TrafficObject trafficObject)
         {
             _trafficObjects.Remove(trafficObject);
-
             Communicator.Instance.Send(this.ToString());
         }
 

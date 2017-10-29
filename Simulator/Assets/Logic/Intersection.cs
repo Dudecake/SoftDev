@@ -1,9 +1,12 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Text;
 using Assets.Logic.Traffic;
 using Assets.Logic.Lights;
 using Assets.Logic.ViewModels;
+using Newtonsoft.Json;
+using RabbitMQ.Client.Events;
 using UnityEngine;
 
 namespace Assets.Logic
@@ -11,6 +14,22 @@ namespace Assets.Logic
     public class Intersection : MonoBehaviour
     {
         private readonly Dictionary<int, TrafficLight> _trafficLights = Constants.lights;
+
+        public Intersection()
+        {
+            Communicator.Instance.AttachReceiver(ConsumerOnReceived);
+        }
+
+        private void ConsumerOnReceived(object sender, BasicDeliverEventArgs ea)
+        {
+            string message = Encoding.UTF8.GetString(ea.Body);
+            Debug.Log($"Received: {message}");
+
+            LightViewModel[] lights = JsonConvert.DeserializeObject<LightViewModel[]>(message);
+            Debug.Log($"Received: {JsonUtility.ToJson(lights)}");
+
+            this.UpdateLights(lights);
+        }
 
         public void AddTraffic(TrafficObject trafficObject, int lightId)
         {
@@ -24,7 +43,7 @@ namespace Assets.Logic
             trafficLight.AddTrafficObject(trafficObject);
         }
 
-        public void UpdateLights(LightViewModel[] lights)
+        private void UpdateLights(LightViewModel[] lights)
         {
             foreach (LightViewModel l in lights)
             {

@@ -35,17 +35,12 @@ namespace Assets.Logic
             _channel.QueueDeclare(Constants.Communication.SendQueueName, false, false, true, Constants.Communication.QueueDeclareArguments);
             _channel.QueueDeclare(Constants.Communication.ReceiveQueueName, false, false, true, Constants.Communication.QueueDeclareArguments);
             _consumer = new EventingBasicConsumer(_channel);
-            _consumer.Received += ConsumerOnReceived;
             _channel.BasicConsume(queue: Constants.Communication.ReceiveQueueName, autoAck: true, consumer: _consumer);
         }
 
-        private void ConsumerOnReceived(object sender, BasicDeliverEventArgs ea)
+        public void AttachReceiver(EventHandler<BasicDeliverEventArgs> eventHandler)
         {
-            string message = Encoding.UTF8.GetString(ea.Body);
-            Debug.Log($"Received: {message}");
-
-            LightViewModel[] lights = JsonConvert.DeserializeObject<LightViewModel[]>(message);
-            Debug.Log($"Received: {JsonUtility.ToJson(lights)}");
+            _consumer.Received += eventHandler;
         }
 
         public void Send(string message)
