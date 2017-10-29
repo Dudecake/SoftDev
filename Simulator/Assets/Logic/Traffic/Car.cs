@@ -8,6 +8,7 @@ namespace Assets.Logic.Traffic
         {
             if (!this.Leaving && this.ParentLight?.Status == 2)
             {
+                this.Leaving = true;
                 StartCoroutine(this.Leave(2));
             }
         }

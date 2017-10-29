@@ -15,9 +15,9 @@ namespace Assets.Logic
     {
         private readonly Dictionary<int, TrafficLight> _trafficLights = Constants.lights;
 
-        public Intersection()
+        private void Start()
         {
-            Communicator.Instance.AttachReceiver(ConsumerOnReceived);
+            Communicator.Instance.AttachReceiver(this.ConsumerOnReceived);
         }
 
         private void ConsumerOnReceived(object sender, BasicDeliverEventArgs ea)
@@ -25,8 +25,8 @@ namespace Assets.Logic
             string message = Encoding.UTF8.GetString(ea.Body);
             Debug.Log($"Received: {message}");
 
-            LightViewModel[] lights = JsonConvert.DeserializeObject<LightViewModel[]>(message);
-            Debug.Log($"Received: {JsonUtility.ToJson(lights)}");
+            LightViewModel[] lights = JsonConvert.DeserializeObject<LightsViewModel>(message).Lights;
+            //Debug.Log($"Received: {JsonUtility.ToJson(lights)}");
 
             this.UpdateLights(lights);
         }
