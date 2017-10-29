@@ -41,7 +41,7 @@ namespace Assets.Logic.Lights
             {
                 LightId = this.Id,
                 Count = _trafficObjects.Count,
-                DirectionRequests = _trafficObjects.Where(t => t is Bus).Select(t => ((Bus) t).DirectionRequest).ToArray()
+                //DirectionRequests = _trafficObjects.Where(t => t is Bus).Select(t => ((Bus) t).DirectionRequest).ToArray()
             };
 
             return JsonConvert.SerializeObject(o);
