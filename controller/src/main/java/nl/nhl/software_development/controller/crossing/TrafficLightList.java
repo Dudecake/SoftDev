@@ -21,6 +21,10 @@ class TrafficLightList extends ArrayList<TrafficLight>
 				break;
 			}
 		}
+		if (res == null)
+		{
+			throw new NullPointerException(String.format("TrafficLight with id %s is not in the TrafficLightList", lightId));
+		}
 		return res;
 	}
 }

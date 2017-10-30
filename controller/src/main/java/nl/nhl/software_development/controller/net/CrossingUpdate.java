@@ -9,23 +9,23 @@ import com.google.gson.annotations.SerializedName;
 public class CrossingUpdate
 {
 	@SerializedName("Lights")
-	private List<TrafficLightUpdate> lights;
+	private List<TrafficLightUpdateWrapper> lights;
 	@SerializedName("Speed")
 	private double timeScale;
 
-	public CrossingUpdate()
+	CrossingUpdate()
 	{
 		lights = new ArrayList<>(0);
 		timeScale = 1.0;
 	}
 
-	public CrossingUpdate(List<TrafficLightUpdate> lights, double timeScale)
+	CrossingUpdate(List<TrafficLightUpdateWrapper> lights, double timeScale)
 	{
 		this.lights = lights;
 		this.timeScale = timeScale;
 	}
 
-	public TrafficLightUpdate geTrafficLightUpdate(int lightId)
+	TrafficLightUpdateWrapper geTrafficLightUpdate(int lightId)
 	{
 		return lights.parallelStream().filter(l -> l.getId() == lightId).collect(Collectors.toList()).get(0);
 	}

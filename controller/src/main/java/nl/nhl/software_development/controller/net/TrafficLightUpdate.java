@@ -42,13 +42,13 @@ public class TrafficLightUpdate
 		return state;
 	}
 
-	public TrafficLightUpdate()
+	TrafficLightUpdate()
 	{
 		id = 101;
 		state = State.RED;
 	}
 
-	public TrafficLightUpdate(int id, State state)
+	TrafficLightUpdate(int id, State state)
 	{
 		this.id = id;
 		this.state = state;

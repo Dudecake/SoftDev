@@ -12,12 +12,11 @@ import nl.nhl.software_development.controller.Time;
 import nl.nhl.software_development.controller.crossing.TrafficLight.InverseWeightComparator;
 import nl.nhl.software_development.controller.crossing.TrafficLight.Location;
 import nl.nhl.software_development.controller.crossing.TrafficLight.Status;
-import nl.nhl.software_development.controller.net.CrossingUpdate;
-import nl.nhl.software_development.controller.net.TrafficUpdate;
+import nl.nhl.software_development.controller.net.CrossingUpdateWrapper;
+import nl.nhl.software_development.controller.net.TrafficUpdateWrapper;
 
 public class Crossing
 {
-	@SuppressWarnings("unused")
 	private static final Logger LOGGER = LoggerFactory.getLogger(Crossing.class);
 	private static final InverseWeightComparator WEIGHT_COMPARATOR = new InverseWeightComparator();
 	static Duration updateTime;
@@ -115,10 +114,9 @@ public class Crossing
 		this.lights = lights;
 	}
 
-	public CrossingUpdate serialize()
+	public CrossingUpdateWrapper serialize()
 	{
-		return new CrossingUpdate(lights.parallelStream().map(TrafficLight::serialize).collect(Collectors.toList()),
-				1.0);
+		return new CrossingUpdateWrapper(lights.parallelStream().map(TrafficLight::serialize).collect(Collectors.toList()), 1.0);
 	}
 
 	public static void preUpdate()
@@ -196,16 +194,23 @@ public class Crossing
 		}
 	}
 
-	public void handleUpdate(TrafficUpdate trafficUpdate)
+	public void handleUpdate(TrafficUpdateWrapper trafficUpdate)
 	{
 		synchronized (lock)
 		{
-			TrafficLight light = lights.getId(trafficUpdate.getLightId());
-			light.setQueueLength(trafficUpdate.getCount());
-			if (BusTrafficLight.class.isInstance(light))
+			try
 			{
-				BusTrafficLight busTrafficLight = BusTrafficLight.class.cast(light);
-				busTrafficLight.setDirectionRequests(trafficUpdate.getDirectionRequests());
+				TrafficLight light = lights.getId(trafficUpdate.getLightId());
+				light.setQueueLength(trafficUpdate.getCount());
+				if (BusTrafficLight.class.isInstance(light))
+				{
+					BusTrafficLight busTrafficLight = BusTrafficLight.class.cast(light);
+					busTrafficLight.setDirectionRequests(trafficUpdate.getDirectionRequests());
+				}
+			}
+			catch (NullPointerException ex)
+			{
+				LOGGER.error("Failed to handle TrafficLightUpdate", ex);
 			}
 		}
 	}

@@ -32,14 +32,20 @@ import com.rabbitmq.client.DefaultConsumer;
 import com.rabbitmq.client.Envelope;
 
 import nl.nhl.software_development.controller.crossing.Crossing;
-import nl.nhl.software_development.controller.net.CrossingUpdate;
+import nl.nhl.software_development.controller.crossing.TrafficLight.Status;
+import nl.nhl.software_development.controller.crossing.TrafficLight.TrafficLightDeserializer;
+import nl.nhl.software_development.controller.net.CrossingUpdateWrapper;
 import nl.nhl.software_development.controller.net.TrafficUpdate;
+import nl.nhl.software_development.controller.net.TrafficUpdate.DirectionRequest;
+import nl.nhl.software_development.controller.net.TrafficUpdate.DirectionRequestDeserializer;
+import nl.nhl.software_development.controller.net.TrafficUpdateWrapper;
 
 public class App implements Runnable
 {
 	private static final Logger LOGGER = LoggerFactory.getLogger(App.class);
 	private static final Charset CHARSET = StandardCharsets.UTF_8;
-	private static final GsonBuilder gsonBuilder = new GsonBuilder().serializeNulls();
+	private static final GsonBuilder gsonBuilder = new GsonBuilder().serializeNulls().registerTypeAdapter(Status.class, new TrafficLightDeserializer())
+			.registerTypeAdapter(DirectionRequest.class, new DirectionRequestDeserializer());
 	public static final String SIMULATOR_QUEUE_NAME = "simulator";
 	public static final String COMMANDQUEUE_NAME = "controller";
 
@@ -52,7 +58,7 @@ public class App implements Runnable
 	private Crossing crossing;
 	private Channel channel;
 	private String lastCorrelationId;
-	private CrossingUpdate lastUpdate;
+	private CrossingUpdateWrapper lastUpdate;
 
 	public static App instance()
 	{
@@ -72,10 +78,11 @@ public class App implements Runnable
 	public App() throws IOException
 	{
 		gson = gsonBuilder.create();
+		String example = gson.toJson(new TrafficUpdateWrapper(), TrafficUpdate.class);
 		crossing = new Crossing();
 		channel = connection.createChannel();
 		lastCorrelationId = "";
-		lastUpdate = new CrossingUpdate();
+		lastUpdate = new CrossingUpdateWrapper();
 		channel.basicQos(1);
 		Map<String, Object> args = new HashMap<>(1);
 		args.put("x-message-ttl", 10000);
@@ -84,8 +91,7 @@ public class App implements Runnable
 		Consumer consumer = new DefaultConsumer(channel)
 		{
 			@Override
-			public void handleDelivery(String consumerTag, Envelope envelope, BasicProperties properties, byte[] body)
-					throws IOException
+			public void handleDelivery(String consumerTag, Envelope envelope, BasicProperties properties, byte[] body) throws IOException
 			{
 				try
 				{
@@ -93,9 +99,12 @@ public class App implements Runnable
 					{
 						lastCorrelationId = properties.getCorrelationId();
 					}
-					TrafficUpdate trafficUpdate = gson.fromJson(new String(body, CHARSET), TrafficUpdate.class);
+					String message = new String(body, CHARSET);
+					TrafficUpdateWrapper trafficUpdate = gson.fromJson(message, TrafficUpdateWrapper.class);
+					String example = gson.toJson(trafficUpdate, TrafficUpdateWrapper.class);
 					LOGGER.info("Got update message");
 					crossing.handleUpdate(trafficUpdate);
+					LOGGER.info("Received Message");
 				}
 				catch (JsonSyntaxException ex)
 				{
@@ -117,13 +126,12 @@ public class App implements Runnable
 		Builder propertiesBuilder = new Builder();
 		if (!lastCorrelationId.isEmpty())
 			propertiesBuilder.correlationId(lastCorrelationId);
-		CrossingUpdate crossingUpdate = crossing.serialize();
-		if (!lastUpdate.equals(crossingUpdate))
+		CrossingUpdateWrapper crossingUpdate = crossing.serialize();
+		// if (!lastUpdate.equals(crossingUpdate))
 		{
 			try
 			{
-				channel.basicPublish("", SIMULATOR_QUEUE_NAME, propertiesBuilder.build(),
-						gson.toJson(crossingUpdate).getBytes(CHARSET));
+				channel.basicPublish("", SIMULATOR_QUEUE_NAME, propertiesBuilder.build(), gson.toJson(crossingUpdate).getBytes(CHARSET));
 			}
 			catch (IOException ex)
 			{
@@ -136,14 +144,10 @@ public class App implements Runnable
 	public static void main(String[] args)
 	{
 		Options options = new Options();
-		options.addOption(
-				Option.builder("h").longOpt("host").hasArg().argName("remote host").desc("Set remote host").build());
-		options.addOption(
-				Option.builder("v").longOpt("vhost").hasArg().argName("virtual host").desc("Set vhost to use").build());
-		options.addOption(
-				Option.builder("u").longOpt("user").hasArg().argName("username").desc("User for login").build());
-		options.addOption(Option.builder("p").longOpt("password").hasArg().argName("password")
-				.desc("Password to use when connecting to server").build());
+		options.addOption(Option.builder("h").longOpt("host").hasArg().argName("remote host").desc("Set remote host").build());
+		options.addOption(Option.builder("v").longOpt("vhost").hasArg().argName("virtual host").desc("Set vhost to use").build());
+		options.addOption(Option.builder("u").longOpt("user").hasArg().argName("username").desc("User for login").build());
+		options.addOption(Option.builder("p").longOpt("password").hasArg().argName("password").desc("Password to use when connecting to server").build());
 		options.addOption(Option.builder("?").longOpt("help").desc("Print help message").build());
 
 		CommandLineParser parser = new DefaultParser();

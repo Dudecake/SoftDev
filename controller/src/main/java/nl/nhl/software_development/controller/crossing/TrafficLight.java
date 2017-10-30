@@ -2,21 +2,65 @@ package nl.nhl.software_development.controller.crossing;
 
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
+import java.lang.reflect.Type;
 import java.time.Duration;
 import java.util.Comparator;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.gson.JsonDeserializationContext;
+import com.google.gson.JsonDeserializer;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonParseException;
+
 import nl.nhl.software_development.controller.Time;
-import nl.nhl.software_development.controller.net.TrafficLightUpdate;
 import nl.nhl.software_development.controller.net.TrafficLightUpdate.State;
+import nl.nhl.software_development.controller.net.TrafficLightUpdateWrapper;
 
 public abstract class TrafficLight implements Comparable<TrafficLight>
 {
 	public enum Status
 	{
-		RED, ORANGE, GREEN
+		RED(0), ORANGE(1), GREEN(2);
+		private int status;
+
+		Status(int status)
+		{
+			this.status = status;
+		}
+
+		public int asInt()
+		{
+			return status;
+		}
+
+		public static Status valueOf(int status)
+		{
+			Status res = Status.RED;
+			switch (status)
+			{
+			case 0:
+				break;
+			case 1:
+				res = Status.ORANGE;
+				break;
+			case 2:
+				res = Status.GREEN;
+				break;
+			}
+			return res;
+		}
+	}
+
+	public static class TrafficLightDeserializer implements JsonDeserializer<Status>
+	{
+		@Override
+		public Status deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException
+		{
+			int status = json.getAsInt();
+			return Status.valueOf(status);
+		}
 	}
 
 	static class InverseWeightComparator implements Comparator<TrafficLight>
@@ -115,9 +159,9 @@ public abstract class TrafficLight implements Comparable<TrafficLight>
 		resetTime = Duration.ZERO;
 	}
 
-	TrafficLightUpdate serialize()
+	TrafficLightUpdateWrapper serialize()
 	{
-		TrafficLightUpdate res = new TrafficLightUpdate(id, State.valueOf(status));
+		TrafficLightUpdateWrapper res = new TrafficLightUpdateWrapper(id, State.valueOf(status));
 		return res;
 	}
 
