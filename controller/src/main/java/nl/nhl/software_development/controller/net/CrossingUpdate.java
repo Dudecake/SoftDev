@@ -4,13 +4,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import com.google.gson.annotations.SerializedName;
-
 public class CrossingUpdate
 {
-	@SerializedName("Lights")
 	private List<TrafficLightUpdateWrapper> lights;
-	@SerializedName("Speed")
 	private double timeScale;
 
 	CrossingUpdate()
@@ -25,7 +21,7 @@ public class CrossingUpdate
 		this.timeScale = timeScale;
 	}
 
-	TrafficLightUpdateWrapper geTrafficLightUpdate(int lightId)
+	TrafficLightUpdateWrapper getTrafficLightUpdate(int lightId)
 	{
 		return lights.parallelStream().filter(l -> l.getId() == lightId).collect(Collectors.toList()).get(0);
 	}

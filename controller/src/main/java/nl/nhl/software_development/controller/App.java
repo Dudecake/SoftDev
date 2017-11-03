@@ -18,6 +18,7 @@ import org.apache.commons.cli.ParseException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.gson.FieldNamingPolicy;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonSyntaxException;
@@ -31,19 +32,17 @@ import com.rabbitmq.client.DefaultConsumer;
 import com.rabbitmq.client.Envelope;
 
 import nl.nhl.software_development.controller.crossing.Crossing;
-import nl.nhl.software_development.controller.crossing.TrafficLight.Status;
-import nl.nhl.software_development.controller.crossing.TrafficLight.TrafficLightDeserializer;
 import nl.nhl.software_development.controller.net.CrossingUpdateWrapper;
-import nl.nhl.software_development.controller.net.TrafficUpdate.DirectionRequest;
-import nl.nhl.software_development.controller.net.TrafficUpdate.DirectionRequestDeserializer;
 import nl.nhl.software_development.controller.net.TrafficUpdateWrapper;
 
 public class App implements Runnable
 {
 	private static final Logger LOGGER = LoggerFactory.getLogger(App.class);
 	private static final Charset CHARSET = StandardCharsets.UTF_8;
-	private static final GsonBuilder gsonBuilder = new GsonBuilder().serializeNulls().registerTypeAdapter(Status.class, new TrafficLightDeserializer())
-			.registerTypeAdapter(DirectionRequest.class, new DirectionRequestDeserializer());
+	private static final GsonBuilder gsonBuilder = new GsonBuilder().serializeNulls()
+			.setFieldNamingPolicy(FieldNamingPolicy.UPPER_CAMEL_CASE);
+	// .registerTypeAdapter(DirectionRequest.class, new
+	// DirectionRequestDeserializer());
 	public static final String SIMULATOR_QUEUE_NAME = "simulator";
 	public static final String COMMANDQUEUE_NAME = "controller";
 
@@ -88,7 +87,8 @@ public class App implements Runnable
 		Consumer consumer = new DefaultConsumer(channel)
 		{
 			@Override
-			public void handleDelivery(String consumerTag, Envelope envelope, BasicProperties properties, byte[] body) throws IOException
+			public void handleDelivery(String consumerTag, Envelope envelope, BasicProperties properties, byte[] body)
+					throws IOException
 			{
 				try
 				{
@@ -127,7 +127,8 @@ public class App implements Runnable
 		{
 			try
 			{
-				channel.basicPublish("", SIMULATOR_QUEUE_NAME, propertiesBuilder.build(), gson.toJson(crossingUpdate).getBytes(CHARSET));
+				channel.basicPublish("", SIMULATOR_QUEUE_NAME, propertiesBuilder.build(),
+						gson.toJson(crossingUpdate, CrossingUpdateWrapper.class).getBytes(CHARSET));
 			}
 			catch (IOException ex)
 			{
@@ -140,10 +141,14 @@ public class App implements Runnable
 	public static void main(String[] args)
 	{
 		Options options = new Options();
-		options.addOption(Option.builder("h").longOpt("host").hasArg().argName("remote host").desc("Set remote host").build());
-		options.addOption(Option.builder("v").longOpt("vhost").hasArg().argName("virtual host").desc("Set vhost to use").build());
-		options.addOption(Option.builder("u").longOpt("user").hasArg().argName("username").desc("User for login").build());
-		options.addOption(Option.builder("p").longOpt("password").hasArg().argName("password").desc("Password to use when connecting to server").build());
+		options.addOption(
+				Option.builder("h").longOpt("host").hasArg().argName("remote host").desc("Set remote host").build());
+		options.addOption(
+				Option.builder("v").longOpt("vhost").hasArg().argName("virtual host").desc("Set vhost to use").build());
+		options.addOption(
+				Option.builder("u").longOpt("user").hasArg().argName("username").desc("User for login").build());
+		options.addOption(Option.builder("p").longOpt("password").hasArg().argName("password")
+				.desc("Password to use when connecting to server").build());
 		options.addOption(Option.builder("?").longOpt("help").desc("Print help message").build());
 
 		CommandLineParser parser = new DefaultParser();

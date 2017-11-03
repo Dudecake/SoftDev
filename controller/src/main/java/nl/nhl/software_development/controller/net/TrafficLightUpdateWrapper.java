@@ -1,12 +1,9 @@
 package nl.nhl.software_development.controller.net;
 
-import com.google.gson.annotations.SerializedName;
-
 import nl.nhl.software_development.controller.net.TrafficLightUpdate.State;
 
 public class TrafficLightUpdateWrapper
 {
-	@SerializedName("TrafficLightUpdate")
 	TrafficLightUpdate trafficLightUpdate;
 
 	public TrafficLightUpdateWrapper()
@@ -17,6 +14,11 @@ public class TrafficLightUpdateWrapper
 	public TrafficLightUpdateWrapper(int id, State state)
 	{
 		trafficLightUpdate = new TrafficLightUpdate(id, state);
+	}
+
+	public TrafficLightUpdateWrapper(int id, State state, int time)
+	{
+		trafficLightUpdate = new TrafficLightUpdate(id, state, time);
 	}
 
 	public State getState()

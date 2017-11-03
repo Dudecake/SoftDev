@@ -2,17 +2,11 @@ package nl.nhl.software_development.controller.crossing;
 
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
-import java.lang.reflect.Type;
 import java.time.Duration;
 import java.util.Comparator;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.google.gson.JsonDeserializationContext;
-import com.google.gson.JsonDeserializer;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonParseException;
 
 import nl.nhl.software_development.controller.Time;
 import nl.nhl.software_development.controller.net.TrafficLightUpdate.State;
@@ -22,45 +16,7 @@ public abstract class TrafficLight implements Comparable<TrafficLight>
 {
 	public enum Status
 	{
-		RED(0), ORANGE(1), GREEN(2);
-		private int status;
-
-		Status(int status)
-		{
-			this.status = status;
-		}
-
-		public int asInt()
-		{
-			return status;
-		}
-
-		public static Status valueOf(int status)
-		{
-			Status res = Status.RED;
-			switch (status)
-			{
-			case 0:
-				break;
-			case 1:
-				res = Status.ORANGE;
-				break;
-			case 2:
-				res = Status.GREEN;
-				break;
-			}
-			return res;
-		}
-	}
-
-	public static class TrafficLightDeserializer implements JsonDeserializer<Status>
-	{
-		@Override
-		public Status deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException
-		{
-			int status = json.getAsInt();
-			return Status.valueOf(status);
-		}
+		RED, ORANGE, GREEN;
 	}
 
 	static class InverseWeightComparator implements Comparator<TrafficLight>
@@ -84,22 +40,67 @@ public abstract class TrafficLight implements Comparable<TrafficLight>
 	enum Location
 	{
 		NORTH, EAST, WEST, SOUTH;
+		@Deprecated
 		public Point2D asPoint2d()
 		{
 			Point2D res = null;
 			switch (this)
 			{
 			case NORTH:
-				res = new Point2D.Float(1, 0);
-				break;
-			case EAST:
 				res = new Point2D.Float(0, 1);
 				break;
+			case EAST:
+				res = new Point2D.Float(1, 0);
+				break;
 			case SOUTH:
-				res = new Point2D.Float(-1, 0);
+				res = new Point2D.Float(0, -1);
 				break;
 			case WEST:
-				res = new Point2D.Float(0, -1);
+				res = new Point2D.Float(-1, 0);
+			default:
+				break;
+			}
+			return res;
+		}
+
+		public Point2D asOriginPoint2d()
+		{
+			Point2D res = null;
+			switch (this)
+			{
+			case NORTH:
+				res = new Point2D.Float(-.25f, 1);
+				break;
+			case EAST:
+				res = new Point2D.Float(1, .25f);
+				break;
+			case SOUTH:
+				res = new Point2D.Float(.25f, -1);
+				break;
+			case WEST:
+				res = new Point2D.Float(-1, -.25f);
+			default:
+				break;
+			}
+			return res;
+		}
+
+		public Point2D asDestPoint2d()
+		{
+			Point2D res = null;
+			switch (this)
+			{
+			case NORTH:
+				res = new Point2D.Float(.25f, 1);
+				break;
+			case EAST:
+				res = new Point2D.Float(1, -.25f);
+				break;
+			case SOUTH:
+				res = new Point2D.Float(-.25f, -1);
+				break;
+			case WEST:
+				res = new Point2D.Float(-1, .25f);
 			default:
 				break;
 			}
@@ -110,10 +111,12 @@ public abstract class TrafficLight implements Comparable<TrafficLight>
 	protected static final Logger LOGGER = LoggerFactory.getLogger(TrafficLight.class);
 	protected final int id;
 	protected Status status;
+	protected int time;
 	protected Duration cycleTime;
 	protected Duration resetTime;
 	protected Duration lastTime;
 	protected int queueLength;
+	protected TrafficLightList interferingLights;
 
 	int getId()
 	{
@@ -154,9 +157,11 @@ public abstract class TrafficLight implements Comparable<TrafficLight>
 	{
 		this.id = id;
 		this.status = status;
+		this.time = -1;
 		lastTime = Duration.ZERO;
 		cycleTime = Duration.ofSeconds(30);
 		resetTime = Duration.ZERO;
+		interferingLights = new TrafficLightList();
 	}
 
 	TrafficLightUpdateWrapper serialize()
@@ -196,11 +201,10 @@ public abstract class TrafficLight implements Comparable<TrafficLight>
 	protected static boolean crossesWith(Location originA, Location destA, Location originB, Location destB)
 	{
 		boolean res = false;
-		if (originA != originB && originA != destB && originB != destA)
+		if (originA != originB && originA != destB)
 		{
-			// FIXME: long curves don't get identified as interfering
-			Line2D lineA = new Line2D.Float(originA.asPoint2d(), destA.asPoint2d());
-			Line2D lineB = new Line2D.Float(originB.asPoint2d(), destB.asPoint2d());
+			Line2D lineA = new Line2D.Float(originA.asOriginPoint2d(), destA.asDestPoint2d());
+			Line2D lineB = new Line2D.Float(originB.asOriginPoint2d(), destB.asDestPoint2d());
 			if (lineA.intersectsLine(lineB))
 			{
 				res = true;

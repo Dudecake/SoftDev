@@ -8,7 +8,10 @@ public class TrafficLightUpdate
 {
 	public enum State
 	{
-		RED, ORANGE, GREEN;
+		@SerializedName("0")
+		RED, @SerializedName("1")
+		ORANGE, @SerializedName("2")
+		GREEN;
 
 		public static State valueOf(Status status)
 		{
@@ -27,10 +30,10 @@ public class TrafficLightUpdate
 		}
 	}
 
-	@SerializedName("Id")
 	private int id;
-	@SerializedName("State")
 	private State state;
+	@SuppressWarnings("unused")
+	private int time;
 
 	public int getId()
 	{
@@ -52,6 +55,13 @@ public class TrafficLightUpdate
 	{
 		this.id = id;
 		this.state = state;
+		this.time = -1;
+	}
+
+	TrafficLightUpdate(int id, State state, int time)
+	{
+		this(id, state);
+		this.time = time;
 	}
 
 	@Override
