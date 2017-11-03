@@ -136,12 +136,12 @@ public class Crossing
 			workLights.clear();
 			workLights.addAll(lights);
 			workLights.sort(WEIGHT_COMPARATOR);
-			if (workLights.get(0).getWeight() == Short.MAX_VALUE && workLights.get(0).getStatus() != Status.GREEN)
+			TrafficLight workLight = workLights.get(0);
+			if (workLight.getWeight() == Short.MAX_VALUE && workLight.getStatus() != Status.GREEN)
 			{
-				TrainTrafficLight trainTrafficLight = TrainTrafficLight.class.cast(workLights.get(0));
 				for (int i = 1; i < workLights.size();)
 				{
-					if (workLights.get(i).interferesWith(trainTrafficLight))
+					if (workLights.get(i).interferesWith(workLight))
 					{
 						workLights.get(i).setStatus(Status.RED);
 						workLights.remove(i);
@@ -154,7 +154,6 @@ public class Crossing
 			}
 			TrafficLightList greenLights = new TrafficLightList();
 			TrafficLightList interferingLights = new TrafficLightList();
-			TrafficLight workLight;
 			lightTrimLoop: for (int i = 1; i < workLights.size(); i++)
 			{
 				workLight = workLights.get(i);

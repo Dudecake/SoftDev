@@ -2,10 +2,13 @@ package nl.nhl.software_development.controller.net;
 
 import java.util.List;
 
+import com.google.gson.annotations.SerializedName;
+
 import nl.nhl.software_development.controller.net.TrafficUpdate.DirectionRequest;
 
 public class TrafficUpdateWrapper
 {
+	@SerializedName("TrafficUpdate")
 	private TrafficUpdate trafficUpdate;
 
 	public TrafficUpdate geTrafficLightUpdate()

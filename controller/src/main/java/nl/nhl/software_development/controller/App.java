@@ -7,7 +7,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -35,7 +34,6 @@ import nl.nhl.software_development.controller.crossing.Crossing;
 import nl.nhl.software_development.controller.crossing.TrafficLight.Status;
 import nl.nhl.software_development.controller.crossing.TrafficLight.TrafficLightDeserializer;
 import nl.nhl.software_development.controller.net.CrossingUpdateWrapper;
-import nl.nhl.software_development.controller.net.TrafficUpdate;
 import nl.nhl.software_development.controller.net.TrafficUpdate.DirectionRequest;
 import nl.nhl.software_development.controller.net.TrafficUpdate.DirectionRequestDeserializer;
 import nl.nhl.software_development.controller.net.TrafficUpdateWrapper;
@@ -78,7 +76,6 @@ public class App implements Runnable
 	public App() throws IOException
 	{
 		gson = gsonBuilder.create();
-		String example = gson.toJson(new TrafficUpdateWrapper(), TrafficUpdate.class);
 		crossing = new Crossing();
 		channel = connection.createChannel();
 		lastCorrelationId = "";
@@ -101,10 +98,8 @@ public class App implements Runnable
 					}
 					String message = new String(body, CHARSET);
 					TrafficUpdateWrapper trafficUpdate = gson.fromJson(message, TrafficUpdateWrapper.class);
-					String example = gson.toJson(trafficUpdate, TrafficUpdateWrapper.class);
-					LOGGER.info("Got update message");
+					LOGGER.debug("Got update message");
 					crossing.handleUpdate(trafficUpdate);
-					LOGGER.info("Received Message");
 				}
 				catch (JsonSyntaxException ex)
 				{
@@ -112,6 +107,7 @@ public class App implements Runnable
 					LOGGER.debug("Got: ".concat(new String(body, CHARSET)));
 				}
 				channel.basicAck(envelope.getDeliveryTag(), false);
+				run();
 			}
 		};
 		channel.basicConsume(COMMANDQUEUE_NAME, false, consumer);
@@ -167,7 +163,7 @@ public class App implements Runnable
 			factory.setPassword(line.getOptionValue('p', "softdev"));
 			connection = factory.newConnection();
 			p = new App();
-			executor.scheduleAtFixedRate(p, 100, 16, TimeUnit.MILLISECONDS);
+			// executor.scheduleAtFixedRate(p, 100, 16, TimeUnit.MILLISECONDS);
 		}
 		catch (ParseException ex)
 		{
