@@ -33,6 +33,12 @@ import com.rabbitmq.client.Envelope;
 
 import nl.nhl.software_development.controller.crossing.Crossing;
 import nl.nhl.software_development.controller.net.CrossingUpdateWrapper;
+import nl.nhl.software_development.controller.net.TrafficLightUpdate.State;
+import nl.nhl.software_development.controller.net.TrafficLightUpdate.StateDeserializer;
+import nl.nhl.software_development.controller.net.TrafficLightUpdate.StateSerializer;
+import nl.nhl.software_development.controller.net.TrafficUpdate.DirectionRequest;
+import nl.nhl.software_development.controller.net.TrafficUpdate.DirectionRequestDeserializer;
+import nl.nhl.software_development.controller.net.TrafficUpdate.DirectionRequestSerializer;
 import nl.nhl.software_development.controller.net.TrafficUpdateWrapper;
 
 public class App implements Runnable
@@ -40,9 +46,11 @@ public class App implements Runnable
 	private static final Logger LOGGER = LoggerFactory.getLogger(App.class);
 	private static final Charset CHARSET = StandardCharsets.UTF_8;
 	private static final GsonBuilder gsonBuilder = new GsonBuilder().serializeNulls()
-			.setFieldNamingPolicy(FieldNamingPolicy.UPPER_CAMEL_CASE);
-	// .registerTypeAdapter(DirectionRequest.class, new
-	// DirectionRequestDeserializer());
+			.setFieldNamingPolicy(FieldNamingPolicy.UPPER_CAMEL_CASE)
+			.registerTypeAdapter(State.class, new StateDeserializer())
+			.registerTypeAdapter(State.class, new StateSerializer())
+			.registerTypeAdapter(DirectionRequest.class, new DirectionRequestDeserializer())
+			.registerTypeAdapter(DirectionRequest.class, new DirectionRequestSerializer());
 	public static final String SIMULATOR_QUEUE_NAME = "simulator";
 	public static final String COMMANDQUEUE_NAME = "controller";
 

@@ -6,23 +6,19 @@ import java.util.List;
 import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonDeserializer;
 import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
+import com.google.gson.JsonPrimitive;
 import com.google.gson.JsonSerializationContext;
 import com.google.gson.JsonSerializer;
-import com.google.gson.annotations.SerializedName;
 
 public class TrafficUpdate
 {
 	public enum DirectionRequest
 	{
-		@SerializedName("2")
-		STRAIGHT(2), @SerializedName("3")
-		LEFT(3), @SerializedName("4")
-		RIGHT(4);
+		STRAIGHT(2), LEFT(3), RIGHT(4);
 		private final int direction;
 
-		DirectionRequest(int direction)
+		private DirectionRequest(int direction)
 		{
 			this.direction = direction;
 		}
@@ -49,25 +45,23 @@ public class TrafficUpdate
 		}
 	}
 
-	public static class DirectionRequestSerializer implements JsonSerializer<DirectionRequest>
-	{
-
-		@Override
-		public JsonElement serialize(DirectionRequest src, Type typeOfSrc, JsonSerializationContext context)
-		{
-			final JsonObject res = new JsonObject();
-			return res;
-		}
-	}
-
 	public static class DirectionRequestDeserializer implements JsonDeserializer<DirectionRequest>
 	{
 		@Override
 		public DirectionRequest deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context)
 				throws JsonParseException
 		{
-			int direction = json.getAsInt();
-			return DirectionRequest.valueOf(direction);
+			return DirectionRequest.valueOf(json.getAsInt());
+		}
+	}
+
+	public static class DirectionRequestSerializer implements JsonSerializer<DirectionRequest>
+	{
+
+		@Override
+		public JsonElement serialize(DirectionRequest src, Type typeOfSrc, JsonSerializationContext context)
+		{
+			return new JsonPrimitive(src.asInt());
 		}
 	}
 
