@@ -15,18 +15,9 @@ namespace Assets.Logic.Lights
         private readonly List<TrafficObject> _trafficObjects = new List<TrafficObject>();
 
         public int Id;
-        private int _status;
         private SpriteRenderer sr;
 
-        public int Status
-        {
-            get { return _status; }
-            set
-            {
-                _status = value;
-                this.OnStatusChange(value);
-            }
-        }
+        public int Status { get; set; }
 
         public void AddTrafficObject(TrafficObject trafficObject)
         {
@@ -62,9 +53,9 @@ namespace Assets.Logic.Lights
             sr = gameObject.GetComponent<SpriteRenderer>();
         }
 
-        private void OnStatusChange(int status)
+        private void Update()
         {
-            switch (status)
+            switch (Status)
             {
                 case 0:
                     this.sr.color = Color.red;

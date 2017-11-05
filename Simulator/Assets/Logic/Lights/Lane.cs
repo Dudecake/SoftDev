@@ -26,6 +26,6 @@ public class Lane : MonoBehaviour
 
     public void RemoveTrafficObject(TrafficObject trafficObject)
     {
-        
+        _trafficObjects.Remove(trafficObject);
     }
 }
