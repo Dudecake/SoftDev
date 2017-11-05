@@ -1,4 +1,5 @@
-﻿using Assets.Logic.Traffic;
+﻿using System.Collections;
+using Assets.Logic.Traffic;
 using UnityEngine;
 
 namespace Assets.Logic
@@ -21,7 +22,12 @@ namespace Assets.Logic
                 UnityEditor.EditorApplication.isPlaying = false;
             }
 
-            this.Intersection.AddTraffic(CarPrefab, 101);
+            InvokeRepeating("RepeatingFunction", 2, 5);
+        }
+
+        void RepeatingFunction()
+        {
+            this.Intersection.AddTraffic(CarPrefab, Random.Range(101, 110));
         }
     }
 }

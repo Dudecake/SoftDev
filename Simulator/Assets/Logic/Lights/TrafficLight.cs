@@ -6,20 +6,26 @@ using System.Threading.Tasks;
 using Assets.Logic.Traffic;
 using Assets.Logic.ViewModels;
 using Newtonsoft.Json;
+using UnityEngine;
 
 namespace Assets.Logic.Lights
 {
-    public abstract class TrafficLight
+    public class TrafficLight : MonoBehaviour
     {
         private readonly List<TrafficObject> _trafficObjects = new List<TrafficObject>();
 
-        public int Id { get; private set; }
-        public int Status { get; set; }
+        public int Id;
+        private int _status;
+        private SpriteRenderer sr;
 
-        protected TrafficLight(int id, int status = 0)
+        public int Status
         {
-            Id = id;
-            Status = status;
+            get { return _status; }
+            set
+            {
+                _status = value;
+                this.OnStatusChange(value);
+            }
         }
 
         public void AddTrafficObject(TrafficObject trafficObject)
@@ -34,6 +40,11 @@ namespace Assets.Logic.Lights
             Communicator.Instance.Send(this.ToString());
         }
 
+        public bool ContainsTrafficObject(TrafficObject trafficObject)
+        {
+            return _trafficObjects.Contains(trafficObject);
+        }
+
         public override string ToString()
         {
             TrafficUpdateViewModel o = new TrafficUpdateViewModel()
@@ -43,7 +54,28 @@ namespace Assets.Logic.Lights
                 //DirectionRequests = _trafficObjects.Where(t => t is Bus).Select(t => ((Bus) t).DirectionRequest).ToArray()
             };
 
-            return JsonConvert.SerializeObject(o);
+            return JsonConvert.SerializeObject(new TrafficUpdateContainerViewModel {TrafficUpdate = o});
+        }
+
+        private void Start()
+        {
+            sr = gameObject.GetComponent<SpriteRenderer>();
+        }
+
+        private void OnStatusChange(int status)
+        {
+            switch (status)
+            {
+                case 0:
+                    this.sr.color = Color.red;
+                    break;
+                case 1:
+                    this.sr.color = Color.yellow;
+                    break;
+                case 2:
+                    this.sr.color = Color.green;
+                    break;
+            }
         }
     }
 }

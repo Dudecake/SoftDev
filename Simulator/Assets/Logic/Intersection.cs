@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using Assets.Logic.Traffic;
 using Assets.Logic.Lights;
@@ -13,7 +14,7 @@ namespace Assets.Logic
 {
     public class Intersection : MonoBehaviour
     {
-        private readonly Dictionary<int, TrafficLight> _trafficLights = Constants.lights;
+        public Lane[] Lanes;
 
         private void Start()
         {
@@ -26,30 +27,23 @@ namespace Assets.Logic
             Debug.Log($"Received: {message}");
 
             LightViewModel[] lights = JsonConvert.DeserializeObject<LightsViewModel>(message).Lights;
-            //Debug.Log($"Received: {JsonUtility.ToJson(lights)}");
 
             this.UpdateLights(lights);
         }
 
-        public void AddTraffic(TrafficObject trafficObject, int lightId)
+        public void AddTraffic(TrafficObject trafficObject, int laneId)
         {
-            StartCoroutine(AttachToLight(Instantiate(trafficObject), _trafficLights[lightId], 3));
-        }
-
-        private IEnumerator AttachToLight(TrafficObject trafficObject, TrafficLight trafficLight, float afterSeconds)
-        {
-            yield return new WaitForSeconds(afterSeconds);
-            trafficObject.ParentLight = trafficLight;
-            trafficLight.AddTrafficObject(trafficObject);
+            Lanes.FirstOrDefault(tl => tl.Id == laneId)?.AddTrafficObject(trafficObject);
         }
 
         private void UpdateLights(LightViewModel[] lights)
         {
-            foreach (LightViewModel l in lights)
+            foreach (LightViewModel lv in lights)
             {
-                if (this._trafficLights.ContainsKey(l.Id))
+                IEnumerable<TrafficLight> tLights = this.Lanes.Where(l => l.TrafficLight.Id == lv.Id).Select(l => l.TrafficLight);
+                foreach (TrafficLight tLight in tLights)
                 {
-                    this._trafficLights[l.Id].Status = l.Status;
+                    tLight.Status = lv.Status;
                 }
             }
         }
