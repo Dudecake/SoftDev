@@ -1,5 +1,8 @@
 package nl.nhl.software_development.controller.crossing;
 
+import nl.nhl.software_development.controller.net.TrafficLightUpdate.State;
+import nl.nhl.software_development.controller.net.TrafficLightUpdateWrapper;
+
 public class BikeTrafficLight extends TrafficLight
 {
 	private final Location origin;
@@ -15,6 +18,22 @@ public class BikeTrafficLight extends TrafficLight
 		if (id < 300 || id > 500)
 			throw new IllegalArgumentException("id doesn't correspond with a bike or pedestrian traffic light");
 		this.origin = origin;
+	}
+
+	public BikeTrafficLight(int id, Status status, Location origin, int time)
+	{
+		super(id, status);
+		if (id < 300 || id > 500)
+			throw new IllegalArgumentException("id doesn't correspond with a bike or pedestrian traffic light");
+		this.origin = origin;
+		this.time = time;
+	}
+
+	@Override
+	TrafficLightUpdateWrapper serialize()
+	{
+		TrafficLightUpdateWrapper res = new TrafficLightUpdateWrapper(id, State.valueOf(status), time);
+		return res;
 	}
 
 	@Override

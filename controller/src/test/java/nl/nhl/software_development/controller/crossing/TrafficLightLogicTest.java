@@ -8,9 +8,9 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
-import nl.nhl.software_development.controller.net.CrossingUpdate;
+import nl.nhl.software_development.controller.net.CrossingUpdateWrapper;
 import nl.nhl.software_development.controller.net.TrafficLightUpdate;
-import nl.nhl.software_development.controller.net.TrafficUpdate;
+import nl.nhl.software_development.controller.net.TrafficUpdateWrapper;
 
 @SuppressWarnings("static-method")
 @Tag("fast")
@@ -22,9 +22,9 @@ public class TrafficLightLogicTest
 	{
 		Crossing.preUpdate(Duration.ofMillis(16));
 		Crossing crossing = new Crossing();
-		crossing.handleUpdate(new TrafficUpdate(101, 1, null, 1.0));
+		crossing.handleUpdate(new TrafficUpdateWrapper(101, 1, null, 1.0));
 		crossing.update();
-		assertEquals(TrafficLightUpdate.State.GREEN, crossing.serialize().geTrafficLightUpdate(101).getState());
+		assertEquals(TrafficLightUpdate.State.GREEN, crossing.serialize().getTrafficLightUpdate(101).getState());
 	}
 
 	@Test
@@ -33,12 +33,12 @@ public class TrafficLightLogicTest
 	{
 		Crossing.preUpdate(Duration.ofMillis(16));
 		Crossing crossing = new Crossing();
-		crossing.handleUpdate(new TrafficUpdate(101, 1, null, 1.0));
-		crossing.handleUpdate(new TrafficUpdate(102, 2, null, 1.0));
+		crossing.handleUpdate(new TrafficUpdateWrapper(101, 1, null, 1.0));
+		crossing.handleUpdate(new TrafficUpdateWrapper(102, 2, null, 1.0));
 		crossing.update();
-		CrossingUpdate update = crossing.serialize();
-		assertEquals(TrafficLightUpdate.State.GREEN, update.geTrafficLightUpdate(101).getState());
-		assertEquals(TrafficLightUpdate.State.GREEN, update.geTrafficLightUpdate(102).getState());
+		CrossingUpdateWrapper update = crossing.serialize();
+		assertEquals(TrafficLightUpdate.State.GREEN, update.getTrafficLightUpdate(101).getState());
+		assertEquals(TrafficLightUpdate.State.GREEN, update.getTrafficLightUpdate(102).getState());
 	}
 
 	@Test
@@ -47,12 +47,12 @@ public class TrafficLightLogicTest
 	{
 		Crossing.preUpdate(Duration.ofMillis(16));
 		Crossing crossing = new Crossing();
-		crossing.handleUpdate(new TrafficUpdate(101, 1, null, 1.0));
-		crossing.handleUpdate(new TrafficUpdate(107, 2, null, 1.0));
+		crossing.handleUpdate(new TrafficUpdateWrapper(101, 1, null, 1.0));
+		crossing.handleUpdate(new TrafficUpdateWrapper(107, 2, null, 1.0));
 		crossing.update();
-		CrossingUpdate update = crossing.serialize();
-		assertEquals(TrafficLightUpdate.State.RED, update.geTrafficLightUpdate(101).getState());
-		assertEquals(TrafficLightUpdate.State.RED, update.geTrafficLightUpdate(102).getState());
-		assertEquals(TrafficLightUpdate.State.GREEN, update.geTrafficLightUpdate(107).getState());
+		CrossingUpdateWrapper update = crossing.serialize();
+		assertEquals(TrafficLightUpdate.State.RED, update.getTrafficLightUpdate(101).getState());
+		assertEquals(TrafficLightUpdate.State.RED, update.getTrafficLightUpdate(102).getState());
+		assertEquals(TrafficLightUpdate.State.GREEN, update.getTrafficLightUpdate(107).getState());
 	}
 }

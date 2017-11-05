@@ -12,12 +12,11 @@ import nl.nhl.software_development.controller.Time;
 import nl.nhl.software_development.controller.crossing.TrafficLight.InverseWeightComparator;
 import nl.nhl.software_development.controller.crossing.TrafficLight.Location;
 import nl.nhl.software_development.controller.crossing.TrafficLight.Status;
-import nl.nhl.software_development.controller.net.CrossingUpdate;
-import nl.nhl.software_development.controller.net.TrafficUpdate;
+import nl.nhl.software_development.controller.net.CrossingUpdateWrapper;
+import nl.nhl.software_development.controller.net.TrafficUpdateWrapper;
 
 public class Crossing
 {
-	@SuppressWarnings("unused")
 	private static final Logger LOGGER = LoggerFactory.getLogger(Crossing.class);
 	private static final InverseWeightComparator WEIGHT_COMPARATOR = new InverseWeightComparator();
 	static Duration updateTime;
@@ -115,10 +114,9 @@ public class Crossing
 		this.lights = lights;
 	}
 
-	public CrossingUpdate serialize()
+	public CrossingUpdateWrapper serialize()
 	{
-		return new CrossingUpdate(lights.parallelStream().map(TrafficLight::serialize).collect(Collectors.toList()),
-				1.0);
+		return new CrossingUpdateWrapper(lights.parallelStream().map(TrafficLight::serialize).collect(Collectors.toList()), 1.0);
 	}
 
 	public static void preUpdate()
@@ -138,12 +136,12 @@ public class Crossing
 			workLights.clear();
 			workLights.addAll(lights);
 			workLights.sort(WEIGHT_COMPARATOR);
-			if (workLights.get(0).getWeight() == Short.MAX_VALUE && workLights.get(0).getStatus() != Status.GREEN)
+			TrafficLight workLight = workLights.get(0);
+			if (workLight.getWeight() == Short.MAX_VALUE && workLight.getStatus() != Status.GREEN)
 			{
-				TrainTrafficLight trainTrafficLight = TrainTrafficLight.class.cast(workLights.get(0));
 				for (int i = 1; i < workLights.size();)
 				{
-					if (workLights.get(i).interferesWith(trainTrafficLight))
+					if (workLights.get(i).interferesWith(workLight))
 					{
 						workLights.get(i).setStatus(Status.RED);
 						workLights.remove(i);
@@ -156,7 +154,6 @@ public class Crossing
 			}
 			TrafficLightList greenLights = new TrafficLightList();
 			TrafficLightList interferingLights = new TrafficLightList();
-			TrafficLight workLight;
 			lightTrimLoop: for (int i = 1; i < workLights.size(); i++)
 			{
 				workLight = workLights.get(i);
@@ -196,16 +193,23 @@ public class Crossing
 		}
 	}
 
-	public void handleUpdate(TrafficUpdate trafficUpdate)
+	public void handleUpdate(TrafficUpdateWrapper trafficUpdate)
 	{
 		synchronized (lock)
 		{
-			TrafficLight light = lights.getId(trafficUpdate.getLightId());
-			light.setQueueLength(trafficUpdate.getCount());
-			if (BusTrafficLight.class.isInstance(light))
+			try
 			{
-				BusTrafficLight busTrafficLight = BusTrafficLight.class.cast(light);
-				busTrafficLight.setDirectionRequests(trafficUpdate.getDirectionRequests());
+				TrafficLight light = lights.getId(trafficUpdate.getLightId());
+				light.setQueueLength(trafficUpdate.getCount());
+				if (BusTrafficLight.class.isInstance(light))
+				{
+					BusTrafficLight busTrafficLight = BusTrafficLight.class.cast(light);
+					busTrafficLight.setDirectionRequests(trafficUpdate.getDirectionRequests());
+				}
+			}
+			catch (NullPointerException ex)
+			{
+				LOGGER.error("Failed to handle TrafficLightUpdate", ex);
 			}
 		}
 	}

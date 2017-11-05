@@ -7,7 +7,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -19,6 +18,7 @@ import org.apache.commons.cli.ParseException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.gson.FieldNamingPolicy;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonSyntaxException;
@@ -32,13 +32,25 @@ import com.rabbitmq.client.DefaultConsumer;
 import com.rabbitmq.client.Envelope;
 
 import nl.nhl.software_development.controller.crossing.Crossing;
-import nl.nhl.software_development.controller.net.TrafficUpdate;
+import nl.nhl.software_development.controller.net.CrossingUpdateWrapper;
+import nl.nhl.software_development.controller.net.TrafficLightUpdate.State;
+import nl.nhl.software_development.controller.net.TrafficLightUpdate.StateDeserializer;
+import nl.nhl.software_development.controller.net.TrafficLightUpdate.StateSerializer;
+import nl.nhl.software_development.controller.net.TrafficUpdate.DirectionRequest;
+import nl.nhl.software_development.controller.net.TrafficUpdate.DirectionRequestDeserializer;
+import nl.nhl.software_development.controller.net.TrafficUpdate.DirectionRequestSerializer;
+import nl.nhl.software_development.controller.net.TrafficUpdateWrapper;
 
 public class App implements Runnable
 {
 	private static final Logger LOGGER = LoggerFactory.getLogger(App.class);
 	private static final Charset CHARSET = StandardCharsets.UTF_8;
-	private static final GsonBuilder gsonBuilder = new GsonBuilder().serializeNulls();
+	private static final GsonBuilder gsonBuilder = new GsonBuilder().serializeNulls()
+			.setFieldNamingPolicy(FieldNamingPolicy.UPPER_CAMEL_CASE)
+			.registerTypeAdapter(State.class, new StateDeserializer())
+			.registerTypeAdapter(State.class, new StateSerializer())
+			.registerTypeAdapter(DirectionRequest.class, new DirectionRequestDeserializer())
+			.registerTypeAdapter(DirectionRequest.class, new DirectionRequestSerializer());
 	public static final String SIMULATOR_QUEUE_NAME = "simulator";
 	public static final String COMMANDQUEUE_NAME = "controller";
 
@@ -51,6 +63,7 @@ public class App implements Runnable
 	private Crossing crossing;
 	private Channel channel;
 	private String lastCorrelationId;
+	private CrossingUpdateWrapper lastUpdate;
 
 	public static App instance()
 	{
@@ -73,6 +86,7 @@ public class App implements Runnable
 		crossing = new Crossing();
 		channel = connection.createChannel();
 		lastCorrelationId = "";
+		lastUpdate = new CrossingUpdateWrapper();
 		channel.basicQos(1);
 		Map<String, Object> args = new HashMap<>(1);
 		args.put("x-message-ttl", 10000);
@@ -90,7 +104,9 @@ public class App implements Runnable
 					{
 						lastCorrelationId = properties.getCorrelationId();
 					}
-					TrafficUpdate trafficUpdate = gson.fromJson(new String(body, CHARSET), TrafficUpdate.class);
+					String message = new String(body, CHARSET);
+					TrafficUpdateWrapper trafficUpdate = gson.fromJson(message, TrafficUpdateWrapper.class);
+					LOGGER.debug("Got update message");
 					crossing.handleUpdate(trafficUpdate);
 				}
 				catch (JsonSyntaxException ex)
@@ -99,6 +115,7 @@ public class App implements Runnable
 					LOGGER.debug("Got: ".concat(new String(body, CHARSET)));
 				}
 				channel.basicAck(envelope.getDeliveryTag(), false);
+				run();
 			}
 		};
 		channel.basicConsume(COMMANDQUEUE_NAME, false, consumer);
@@ -113,14 +130,19 @@ public class App implements Runnable
 		Builder propertiesBuilder = new Builder();
 		if (!lastCorrelationId.isEmpty())
 			propertiesBuilder.correlationId(lastCorrelationId);
-		try
+		CrossingUpdateWrapper crossingUpdate = crossing.serialize();
+		// if (!lastUpdate.equals(crossingUpdate))
 		{
-			channel.basicPublish("", SIMULATOR_QUEUE_NAME, propertiesBuilder.build(),
-					gson.toJson(crossing.serialize()).getBytes(CHARSET));
-		}
-		catch (IOException ex)
-		{
-			LOGGER.error("Failed to send message", ex);
+			try
+			{
+				channel.basicPublish("", SIMULATOR_QUEUE_NAME, propertiesBuilder.build(),
+						gson.toJson(crossingUpdate, CrossingUpdateWrapper.class).getBytes(CHARSET));
+			}
+			catch (IOException ex)
+			{
+				LOGGER.error("Failed to send message", ex);
+			}
+			lastUpdate = crossingUpdate;
 		}
 	}
 
@@ -154,7 +176,7 @@ public class App implements Runnable
 			factory.setPassword(line.getOptionValue('p', "softdev"));
 			connection = factory.newConnection();
 			p = new App();
-			executor.scheduleAtFixedRate(p, 100, 16, TimeUnit.MILLISECONDS);
+			// executor.scheduleAtFixedRate(p, 100, 16, TimeUnit.MILLISECONDS);
 		}
 		catch (ParseException ex)
 		{

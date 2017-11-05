@@ -45,6 +45,15 @@ public class TrafficLightTest
 	}
 
 	@Test
+	@DisplayName("Test intersection long curve")
+	public void testIntersectionLongCurve()
+	{
+		CarTrafficLight lightA = new CarTrafficLight(107, Status.RED, Location.SOUTH, Arrays.asList(Location.WEST));
+		CarTrafficLight lightB = new CarTrafficLight(110, Status.RED, Location.WEST, Arrays.asList(Location.NORTH));
+		assertTrue(lightA.interferesWith(lightB));
+	}
+
+	@Test
 	@DisplayName("Test intersection car")
 	public void testInterSectionCar()
 	{
