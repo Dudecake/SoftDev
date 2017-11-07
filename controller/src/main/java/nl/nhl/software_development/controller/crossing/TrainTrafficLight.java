@@ -2,6 +2,8 @@ package nl.nhl.software_development.controller.crossing;
 
 import java.time.Duration;
 
+import nl.nhl.software_development.controller.net.TrafficLightUpdate;
+
 public class TrainTrafficLight extends TrafficLight
 {
 	private final Location origin;
@@ -9,6 +11,12 @@ public class TrainTrafficLight extends TrafficLight
 	Location getOrigin()
 	{
 		return origin;
+	}
+
+	@Override
+	Status getStatus()
+	{
+		return super.getStatus();
 	}
 
 	public TrainTrafficLight(int id, Status status, Location origin)
@@ -41,6 +49,12 @@ public class TrainTrafficLight extends TrafficLight
 				res = true;
 		}
 		return res;
+	}
+
+	@Override
+	TrafficLightUpdate serialize()
+	{
+		return super.serialize();
 	}
 
 	@Override

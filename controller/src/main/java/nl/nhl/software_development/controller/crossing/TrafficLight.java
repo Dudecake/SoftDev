@@ -9,8 +9,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import nl.nhl.software_development.controller.Time;
+import nl.nhl.software_development.controller.net.TrafficLightUpdate;
 import nl.nhl.software_development.controller.net.TrafficLightUpdate.State;
-import nl.nhl.software_development.controller.net.TrafficLightUpdateWrapper;
 
 public abstract class TrafficLight implements Comparable<TrafficLight>
 {
@@ -164,10 +164,9 @@ public abstract class TrafficLight implements Comparable<TrafficLight>
 		interferingLights = new TrafficLightList();
 	}
 
-	TrafficLightUpdateWrapper serialize()
+	TrafficLightUpdate serialize()
 	{
-		TrafficLightUpdateWrapper res = new TrafficLightUpdateWrapper(id, State.valueOf(status));
-		return res;
+		return new TrafficLightUpdate(id, State.valueOf(status));
 	}
 
 	boolean canReset(Duration time)

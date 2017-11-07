@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -32,7 +33,7 @@ import com.rabbitmq.client.DefaultConsumer;
 import com.rabbitmq.client.Envelope;
 
 import nl.nhl.software_development.controller.crossing.Crossing;
-import nl.nhl.software_development.controller.net.CrossingUpdateWrapper;
+import nl.nhl.software_development.controller.net.CrossingUpdate;
 import nl.nhl.software_development.controller.net.TrafficLightUpdate.State;
 import nl.nhl.software_development.controller.net.TrafficLightUpdate.StateDeserializer;
 import nl.nhl.software_development.controller.net.TrafficLightUpdate.StateSerializer;
@@ -45,15 +46,14 @@ public class App implements Runnable
 {
 	private static final Logger LOGGER = LoggerFactory.getLogger(App.class);
 	private static final Charset CHARSET = StandardCharsets.UTF_8;
-	private static final GsonBuilder gsonBuilder = new GsonBuilder().serializeNulls()
-			.setFieldNamingPolicy(FieldNamingPolicy.UPPER_CAMEL_CASE)
-			.registerTypeAdapter(State.class, new StateDeserializer())
-			.registerTypeAdapter(State.class, new StateSerializer())
+	private static final GsonBuilder gsonBuilder = new GsonBuilder().serializeNulls().setFieldNamingPolicy(FieldNamingPolicy.UPPER_CAMEL_CASE)
+			.registerTypeAdapter(State.class, new StateDeserializer()).registerTypeAdapter(State.class, new StateSerializer())
 			.registerTypeAdapter(DirectionRequest.class, new DirectionRequestDeserializer())
 			.registerTypeAdapter(DirectionRequest.class, new DirectionRequestSerializer());
 	public static final String SIMULATOR_QUEUE_NAME = "simulator";
 	public static final String COMMANDQUEUE_NAME = "controller";
 
+	@SuppressWarnings("unused")
 	private static ScheduledExecutorService executor;
 	private static App p;
 	private static ConnectionFactory factory = new ConnectionFactory();
@@ -63,7 +63,8 @@ public class App implements Runnable
 	private Crossing crossing;
 	private Channel channel;
 	private String lastCorrelationId;
-	private CrossingUpdateWrapper lastUpdate;
+	@SuppressWarnings("unused")
+	private CrossingUpdate lastUpdate;
 
 	public static App instance()
 	{
@@ -86,7 +87,7 @@ public class App implements Runnable
 		crossing = new Crossing();
 		channel = connection.createChannel();
 		lastCorrelationId = "";
-		lastUpdate = new CrossingUpdateWrapper();
+		lastUpdate = new CrossingUpdate();
 		channel.basicQos(1);
 		Map<String, Object> args = new HashMap<>(1);
 		args.put("x-message-ttl", 10000);
@@ -95,8 +96,7 @@ public class App implements Runnable
 		Consumer consumer = new DefaultConsumer(channel)
 		{
 			@Override
-			public void handleDelivery(String consumerTag, Envelope envelope, BasicProperties properties, byte[] body)
-					throws IOException
+			public void handleDelivery(String consumerTag, Envelope envelope, BasicProperties properties, byte[] body) throws IOException
 			{
 				try
 				{
@@ -115,7 +115,7 @@ public class App implements Runnable
 					LOGGER.debug("Got: ".concat(new String(body, CHARSET)));
 				}
 				channel.basicAck(envelope.getDeliveryTag(), false);
-				run();
+				// run();
 			}
 		};
 		channel.basicConsume(COMMANDQUEUE_NAME, false, consumer);
@@ -130,17 +130,21 @@ public class App implements Runnable
 		Builder propertiesBuilder = new Builder();
 		if (!lastCorrelationId.isEmpty())
 			propertiesBuilder.correlationId(lastCorrelationId);
-		CrossingUpdateWrapper crossingUpdate = crossing.serialize();
+		CrossingUpdate crossingUpdate = crossing.serialize();
 		// if (!lastUpdate.equals(crossingUpdate))
 		{
 			try
 			{
-				channel.basicPublish("", SIMULATOR_QUEUE_NAME, propertiesBuilder.build(),
-						gson.toJson(crossingUpdate, CrossingUpdateWrapper.class).getBytes(CHARSET));
+				LOGGER.debug(String.format("Sending: %s", gson.toJson(crossingUpdate, CrossingUpdate.class)));
+				channel.basicPublish("", SIMULATOR_QUEUE_NAME, propertiesBuilder.build(), gson.toJson(crossingUpdate, CrossingUpdate.class).getBytes(CHARSET));
 			}
 			catch (IOException ex)
 			{
 				LOGGER.error("Failed to send message", ex);
+			}
+			catch (Exception ex)
+			{
+				LOGGER.error("Failed to do stuff", ex);
 			}
 			lastUpdate = crossingUpdate;
 		}
@@ -149,14 +153,10 @@ public class App implements Runnable
 	public static void main(String[] args)
 	{
 		Options options = new Options();
-		options.addOption(
-				Option.builder("h").longOpt("host").hasArg().argName("remote host").desc("Set remote host").build());
-		options.addOption(
-				Option.builder("v").longOpt("vhost").hasArg().argName("virtual host").desc("Set vhost to use").build());
-		options.addOption(
-				Option.builder("u").longOpt("user").hasArg().argName("username").desc("User for login").build());
-		options.addOption(Option.builder("p").longOpt("password").hasArg().argName("password")
-				.desc("Password to use when connecting to server").build());
+		options.addOption(Option.builder("h").longOpt("host").hasArg().argName("remote host").desc("Set remote host").build());
+		options.addOption(Option.builder("v").longOpt("vhost").hasArg().argName("virtual host").desc("Set vhost to use").build());
+		options.addOption(Option.builder("u").longOpt("user").hasArg().argName("username").desc("User for login").build());
+		options.addOption(Option.builder("p").longOpt("password").hasArg().argName("password").desc("Password to use when connecting to server").build());
 		options.addOption(Option.builder("?").longOpt("help").desc("Print help message").build());
 
 		CommandLineParser parser = new DefaultParser();
@@ -176,7 +176,7 @@ public class App implements Runnable
 			factory.setPassword(line.getOptionValue('p', "softdev"));
 			connection = factory.newConnection();
 			p = new App();
-			// executor.scheduleAtFixedRate(p, 100, 16, TimeUnit.MILLISECONDS);
+			executor.scheduleAtFixedRate(p, 100, 16, TimeUnit.MILLISECONDS);
 		}
 		catch (ParseException ex)
 		{

@@ -12,7 +12,7 @@ import nl.nhl.software_development.controller.Time;
 import nl.nhl.software_development.controller.crossing.TrafficLight.InverseWeightComparator;
 import nl.nhl.software_development.controller.crossing.TrafficLight.Location;
 import nl.nhl.software_development.controller.crossing.TrafficLight.Status;
-import nl.nhl.software_development.controller.net.CrossingUpdateWrapper;
+import nl.nhl.software_development.controller.net.CrossingUpdate;
 import nl.nhl.software_development.controller.net.TrafficUpdateWrapper;
 
 public class Crossing
@@ -114,9 +114,9 @@ public class Crossing
 		this.lights = lights;
 	}
 
-	public CrossingUpdateWrapper serialize()
+	public CrossingUpdate serialize()
 	{
-		return new CrossingUpdateWrapper(lights.parallelStream().map(TrafficLight::serialize).collect(Collectors.toList()), 1.0);
+		return new CrossingUpdate(lights.parallelStream().map(TrafficLight::serialize).collect(Collectors.toList()), 1.0);
 	}
 
 	public static void preUpdate()
