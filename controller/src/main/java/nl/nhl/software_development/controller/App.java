@@ -5,6 +5,7 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Random;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -34,6 +35,7 @@ import com.rabbitmq.client.Envelope;
 
 import nl.nhl.software_development.controller.crossing.Crossing;
 import nl.nhl.software_development.controller.net.CrossingUpdate;
+import nl.nhl.software_development.controller.net.TimescaleUpdate;
 import nl.nhl.software_development.controller.net.TrafficLightUpdate.State;
 import nl.nhl.software_development.controller.net.TrafficLightUpdate.StateDeserializer;
 import nl.nhl.software_development.controller.net.TrafficLightUpdate.StateSerializer;
@@ -46,12 +48,15 @@ public class App implements Runnable
 {
 	private static final Logger LOGGER = LoggerFactory.getLogger(App.class);
 	private static final Charset CHARSET = StandardCharsets.UTF_8;
-	private static final GsonBuilder gsonBuilder = new GsonBuilder().serializeNulls().setFieldNamingPolicy(FieldNamingPolicy.UPPER_CAMEL_CASE)
-			.registerTypeAdapter(State.class, new StateDeserializer()).registerTypeAdapter(State.class, new StateSerializer())
+	private static final GsonBuilder gsonBuilder = new GsonBuilder().serializeNulls()
+			.setFieldNamingPolicy(FieldNamingPolicy.UPPER_CAMEL_CASE)
+			.registerTypeAdapter(State.class, new StateDeserializer())
+			.registerTypeAdapter(State.class, new StateSerializer())
 			.registerTypeAdapter(DirectionRequest.class, new DirectionRequestDeserializer())
 			.registerTypeAdapter(DirectionRequest.class, new DirectionRequestSerializer());
 	public static final String SIMULATOR_QUEUE_NAME = "simulator";
 	public static final String COMMANDQUEUE_NAME = "controller";
+	public static final Random R = new Random();
 
 	@SuppressWarnings("unused")
 	private static ScheduledExecutorService executor;
@@ -63,7 +68,6 @@ public class App implements Runnable
 	private Crossing crossing;
 	private Channel channel;
 	private String lastCorrelationId;
-	@SuppressWarnings("unused")
 	private CrossingUpdate lastUpdate;
 
 	public static App instance()
@@ -96,7 +100,8 @@ public class App implements Runnable
 		Consumer consumer = new DefaultConsumer(channel)
 		{
 			@Override
-			public void handleDelivery(String consumerTag, Envelope envelope, BasicProperties properties, byte[] body) throws IOException
+			public void handleDelivery(String consumerTag, Envelope envelope, BasicProperties properties, byte[] body)
+					throws IOException
 			{
 				try
 				{
@@ -106,8 +111,19 @@ public class App implements Runnable
 					}
 					String message = new String(body, CHARSET);
 					TrafficUpdateWrapper trafficUpdate = gson.fromJson(message, TrafficUpdateWrapper.class);
-					LOGGER.debug("Got update message");
-					crossing.handleUpdate(trafficUpdate);
+					int updateHash = trafficUpdate.getUpdateHash();
+					if (updateHash == TrafficUpdateWrapper.class.hashCode())
+					{
+						LOGGER.debug("Got traffic update message");
+						crossing.handleUpdate(trafficUpdate);
+					}
+					else if (updateHash == TimescaleUpdate.class.hashCode())
+					{
+						LOGGER.debug("Got timescale update message");
+						double timescale = trafficUpdate.getTimescale();
+						if (timescale >= 0)
+							Time.setTimeScale(timescale);
+					}
 				}
 				catch (JsonSyntaxException ex)
 				{
@@ -131,12 +147,13 @@ public class App implements Runnable
 		if (!lastCorrelationId.isEmpty())
 			propertiesBuilder.correlationId(lastCorrelationId);
 		CrossingUpdate crossingUpdate = crossing.serialize();
-		// if (!lastUpdate.equals(crossingUpdate))
+		if (!lastUpdate.equals(crossingUpdate))
 		{
 			try
 			{
 				LOGGER.debug(String.format("Sending: %s", gson.toJson(crossingUpdate, CrossingUpdate.class)));
-				channel.basicPublish("", SIMULATOR_QUEUE_NAME, propertiesBuilder.build(), gson.toJson(crossingUpdate, CrossingUpdate.class).getBytes(CHARSET));
+				channel.basicPublish("", SIMULATOR_QUEUE_NAME, propertiesBuilder.build(),
+						gson.toJson(crossingUpdate, CrossingUpdate.class).getBytes(CHARSET));
 			}
 			catch (IOException ex)
 			{
@@ -153,10 +170,14 @@ public class App implements Runnable
 	public static void main(String[] args)
 	{
 		Options options = new Options();
-		options.addOption(Option.builder("h").longOpt("host").hasArg().argName("remote host").desc("Set remote host").build());
-		options.addOption(Option.builder("v").longOpt("vhost").hasArg().argName("virtual host").desc("Set vhost to use").build());
-		options.addOption(Option.builder("u").longOpt("user").hasArg().argName("username").desc("User for login").build());
-		options.addOption(Option.builder("p").longOpt("password").hasArg().argName("password").desc("Password to use when connecting to server").build());
+		options.addOption(
+				Option.builder("h").longOpt("host").hasArg().argName("remote host").desc("Set remote host").build());
+		options.addOption(
+				Option.builder("v").longOpt("vhost").hasArg().argName("virtual host").desc("Set vhost to use").build());
+		options.addOption(
+				Option.builder("u").longOpt("user").hasArg().argName("username").desc("User for login").build());
+		options.addOption(Option.builder("p").longOpt("password").hasArg().argName("password")
+				.desc("Password to use when connecting to server").build());
 		options.addOption(Option.builder("?").longOpt("help").desc("Print help message").build());
 
 		CommandLineParser parser = new DefaultParser();

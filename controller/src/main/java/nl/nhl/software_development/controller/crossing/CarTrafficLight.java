@@ -30,7 +30,28 @@ public class CarTrafficLight extends TrafficLight
 	boolean interferesWith(TrafficLight other)
 	{
 		boolean res = false;
-		if (BikeTrafficLight.class.isInstance(other))
+		if (!equals(other) && CarTrafficLight.class.isInstance(other))
+		{
+			CarTrafficLight carTrafficLight = CarTrafficLight.class.cast(other);
+			locationLoop: for (Location thisDest : destinations)
+			{
+				for (Location otherDest : carTrafficLight.getDestinations())
+				{
+					if (TrafficLight.crossesWith(origin, thisDest, carTrafficLight.getOrigin(), otherDest))
+					{
+						res = true;
+						break locationLoop;
+					}
+				}
+			}
+		}
+		else if (TrainTrafficLight.class.isInstance(other))
+		{
+			TrainTrafficLight trainTrafficLight = TrainTrafficLight.class.cast(other);
+			if (origin == trainTrafficLight.getOrigin() || destinations.contains(trainTrafficLight.getOrigin()))
+				res = true;
+		}
+		else if (BikeTrafficLight.class.isInstance(other))
 		{
 			BikeTrafficLight bikeTrafficLight = BikeTrafficLight.class.cast(other);
 			if (origin == bikeTrafficLight.getOrigin() || destinations.contains(bikeTrafficLight.getOrigin()))
@@ -46,21 +67,6 @@ public class CarTrafficLight extends TrafficLight
 				for (Location otherDest : busTrafficLight.getDirectionRequests())
 				{
 					if (TrafficLight.crossesWith(origin, thisDest, busTrafficLight.getOrigin(), otherDest))
-					{
-						res = true;
-						break locationLoop;
-					}
-				}
-			}
-		}
-		else if (CarTrafficLight.class.isInstance(other))
-		{
-			CarTrafficLight carTrafficLight = CarTrafficLight.class.cast(other);
-			locationLoop: for (Location thisDest : destinations)
-			{
-				for (Location otherDest : carTrafficLight.getDestinations())
-				{
-					if (TrafficLight.crossesWith(origin, thisDest, carTrafficLight.getOrigin(), otherDest))
 					{
 						res = true;
 						break locationLoop;
@@ -85,14 +91,4 @@ public class CarTrafficLight extends TrafficLight
 		}
 		return res;
 	}
-
-	@Override
-	boolean interferesWith(TrainTrafficLight other)
-	{
-		boolean res = false;
-		if (other.getOrigin() == origin || destinations.contains(other.getOrigin()))
-			res = true;
-		return res;
-	}
-
 }

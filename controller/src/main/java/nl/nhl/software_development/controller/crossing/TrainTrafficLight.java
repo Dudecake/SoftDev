@@ -16,12 +16,18 @@ public class TrainTrafficLight extends TrafficLight
 	@Override
 	Status getStatus()
 	{
-		return super.getStatus();
+		return status.inverse();
+	}
+
+	@Override
+	Status setStatus(Status status)
+	{
+		return super.setStatus(status.inverse());
 	}
 
 	public TrainTrafficLight(int id, Status status, Location origin)
 	{
-		super(id, status);
+		super(id, status.inverse());
 		this.origin = origin;
 		cycleTime = Duration.ofSeconds(30);
 	}
@@ -30,6 +36,12 @@ public class TrainTrafficLight extends TrafficLight
 	int getWeight()
 	{
 		return queueLength == 0 ? 0 : Short.MAX_VALUE;
+	}
+
+	@Override
+	TrafficLightUpdate serialize()
+	{
+		return super.serialize();
 	}
 
 	@Override
@@ -52,12 +64,6 @@ public class TrainTrafficLight extends TrafficLight
 	}
 
 	@Override
-	TrafficLightUpdate serialize()
-	{
-		return super.serialize();
-	}
-
-	@Override
 	boolean interferesWith(TrafficLightList others)
 	{
 		boolean res = false;
@@ -71,11 +77,4 @@ public class TrainTrafficLight extends TrafficLight
 		}
 		return res;
 	}
-
-	@Override
-	boolean interferesWith(TrainTrafficLight other)
-	{
-		return false;
-	}
-
 }

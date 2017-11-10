@@ -65,30 +65,22 @@ public class TrafficUpdate
 		}
 	}
 
-	private double speed;
 	private int lightId;
 	private int count;
 	private List<DirectionRequest> directionRequests;
 
 	TrafficUpdate()
 	{
-		this.speed = 1.0;
 		this.lightId = 101;
 		this.count = 0;
 		this.directionRequests = null;
 	}
 
-	TrafficUpdate(int lightId, int count, List<DirectionRequest> directionRequests, double speed)
+	TrafficUpdate(int lightId, int count, List<DirectionRequest> directionRequests)
 	{
-		this.speed = speed;
 		this.lightId = lightId;
 		this.count = count;
 		this.directionRequests = directionRequests;
-	}
-
-	public double getSpeed()
-	{
-		return speed;
 	}
 
 	public int getLightId()

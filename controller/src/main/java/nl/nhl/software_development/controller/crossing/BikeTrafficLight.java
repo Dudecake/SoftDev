@@ -75,11 +75,4 @@ public class BikeTrafficLight extends TrafficLight
 		}
 		return res;
 	}
-
-	@Override
-	boolean interferesWith(TrainTrafficLight other)
-	{
-		return false;
-	}
-
 }
