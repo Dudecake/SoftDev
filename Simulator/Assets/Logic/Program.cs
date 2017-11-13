@@ -22,10 +22,17 @@ namespace Assets.Logic
                 UnityEditor.EditorApplication.isPlaying = false;
             }
 
-            InvokeRepeating("RepeatingFunction", 2, 5);
+            InvokeRepeating("RepeatingFunction", 1, 0.5f);
+
+            //Vector2 v2_1 = new Vector2(0, 0);
+            //Vector2 v2_2 = new Vector2(2, 2);
+            //float angleS = AngleBetweenVector2(v2_1, v2_2);
+            //Debug.Log(angleS);
         }
 
-        void RepeatingFunction()
+        
+
+        private void RepeatingFunction()
         {
             this.Intersection.AddTraffic(CarPrefab, Random.Range(101, 110));
         }

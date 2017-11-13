@@ -15,27 +15,41 @@ namespace Assets.Logic
     {
         private static Communicator _instance;
         public static Communicator Instance => _instance ?? (_instance = new Communicator());
+        
+        private const string SendQueue = "controller";
+        private const string ReceiveQueue = "simulator";
+        private const string HostName = "localhost";
+        private const string VirtualHost = "/6";
+        private const string UserName = "guest";
+        private const string Password = "guest";
 
         private readonly ConnectionFactory _factory = new ConnectionFactory()
         {
-            HostName = Constants.Communication.HostName,
-            VirtualHost = Constants.Communication.VirtualHost,
-            UserName = Constants.Communication.UserName,
-            Password = Constants.Communication.Password
+            HostName = HostName,
+            VirtualHost = VirtualHost,
+            UserName = UserName,
+            Password = Password
         };
         private readonly IConnection _connection;
         private readonly IModel _channel;
         private readonly EventingBasicConsumer _consumer;
+
 
         private Communicator()
         {
             if (_connection == null)
                 _connection = _factory.CreateConnection();
             _channel = _connection.CreateModel();
-            _channel.QueueDeclare(Constants.Communication.SendQueueName, false, false, true, Constants.Communication.QueueDeclareArguments);
-            _channel.QueueDeclare(Constants.Communication.ReceiveQueueName, false, false, true, Constants.Communication.QueueDeclareArguments);
+            _channel.QueueDeclare(SendQueue, false, false, true, new Dictionary<string, object>
+            {
+                { "x-message-ttl", 10000 }
+            });
+            _channel.QueueDeclare(ReceiveQueue, false, false, true, new Dictionary<string, object>
+            {
+                { "x-message-ttl", 10000 }
+            });
             _consumer = new EventingBasicConsumer(_channel);
-            _channel.BasicConsume(queue: Constants.Communication.ReceiveQueueName, autoAck: true, consumer: _consumer);
+            _channel.BasicConsume(queue: ReceiveQueue, autoAck: true, consumer: _consumer);
         }
 
         public void AttachReceiver(EventHandler<BasicDeliverEventArgs> eventHandler)
@@ -47,7 +61,7 @@ namespace Assets.Logic
         {
             byte[] body = Encoding.UTF8.GetBytes(message);
             _channel.BasicPublish(exchange: "",
-                routingKey: Constants.Communication.SendQueueName,
+                routingKey: SendQueue,
                 basicProperties: null,
                 body: body);
             Debug.Log($"Sent: {message}");
