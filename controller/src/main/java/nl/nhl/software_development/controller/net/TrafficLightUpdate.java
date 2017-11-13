@@ -69,8 +69,7 @@ public class TrafficLightUpdate
 	{
 
 		@Override
-		public State deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context)
-				throws JsonParseException
+		public State deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException
 		{
 			return State.valueOf(json.getAsInt());
 		}
@@ -87,7 +86,7 @@ public class TrafficLightUpdate
 	}
 
 	private int id;
-	private State state;
+	private State status;
 	@SuppressWarnings("unused")
 	private int time;
 
@@ -98,23 +97,23 @@ public class TrafficLightUpdate
 
 	public State getState()
 	{
-		return state;
+		return status;
 	}
 
 	TrafficLightUpdate()
 	{
 		id = 101;
-		state = State.RED;
+		status = State.RED;
 	}
 
-	TrafficLightUpdate(int id, State state)
+	public TrafficLightUpdate(int id, State state)
 	{
 		this.id = id;
-		this.state = state;
+		this.status = state;
 		this.time = -1;
 	}
 
-	TrafficLightUpdate(int id, State state, int time)
+	public TrafficLightUpdate(int id, State state, int time)
 	{
 		this(id, state);
 		this.time = time;
@@ -127,7 +126,7 @@ public class TrafficLightUpdate
 		if (TrafficLightUpdate.class.isInstance(obj))
 		{
 			TrafficLightUpdate other = TrafficLightUpdate.class.cast(obj);
-			res = (this.id == other.id && this.state == other.state);
+			res = (this.id == other.id && this.status == other.status);
 		}
 		else
 			res = super.equals(obj);

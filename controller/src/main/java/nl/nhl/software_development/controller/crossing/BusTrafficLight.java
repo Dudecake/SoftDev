@@ -63,7 +63,13 @@ public class BusTrafficLight extends TrafficLight
 	boolean interferesWith(TrafficLight other)
 	{
 		boolean res = false;
-		if (BikeTrafficLight.class.isInstance(other))
+		if (TrainTrafficLight.class.isInstance(other))
+		{
+			TrainTrafficLight trainTrafficLight = TrainTrafficLight.class.cast(other);
+			if (origin == trainTrafficLight.getOrigin() || directionRequests.contains(trainTrafficLight.getOrigin()))
+				res = true;
+		}
+		else if (BikeTrafficLight.class.isInstance(other))
 		{
 			BikeTrafficLight bikeTrafficLight = BikeTrafficLight.class.cast(other);
 			if (origin == bikeTrafficLight.getOrigin() || directionRequests.contains(bikeTrafficLight.getOrigin()))
@@ -105,15 +111,6 @@ public class BusTrafficLight extends TrafficLight
 				break;
 			}
 		}
-		return res;
-	}
-
-	@Override
-	boolean interferesWith(TrainTrafficLight other)
-	{
-		boolean res = false;
-		if (origin == other.getOrigin() || directionRequests.contains(other.getOrigin()))
-			res = true;
 		return res;
 	}
 }

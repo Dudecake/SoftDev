@@ -7,6 +7,7 @@ import nl.nhl.software_development.controller.net.TrafficUpdate.DirectionRequest
 public class TrafficUpdateWrapper
 {
 	private TrafficUpdate trafficUpdate;
+	private TimescaleUpdate speed;
 
 	public TrafficUpdate geTrafficLightUpdate()
 	{
@@ -20,7 +21,23 @@ public class TrafficUpdateWrapper
 
 	public TrafficUpdateWrapper(int lightId, int count, List<DirectionRequest> directionRequests, double speed)
 	{
-		trafficUpdate = new TrafficUpdate(lightId, count, directionRequests, speed);
+		trafficUpdate = new TrafficUpdate(lightId, count, directionRequests);
+		this.speed = new TimescaleUpdate(speed);
+	}
+
+	public int getUpdateHash()
+	{
+		int res = -1;
+		if (trafficUpdate != null)
+			res = TrafficUpdate.class.hashCode();
+		else if (speed != null)
+			res = TimescaleUpdate.class.hashCode();
+		return res;
+	}
+
+	public double getTimescale()
+	{
+		return speed.getSpeed();
 	}
 
 	public int getLightId()

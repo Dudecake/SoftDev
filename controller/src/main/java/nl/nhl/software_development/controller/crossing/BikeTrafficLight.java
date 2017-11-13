@@ -1,7 +1,7 @@
 package nl.nhl.software_development.controller.crossing;
 
+import nl.nhl.software_development.controller.net.TrafficLightUpdate;
 import nl.nhl.software_development.controller.net.TrafficLightUpdate.State;
-import nl.nhl.software_development.controller.net.TrafficLightUpdateWrapper;
 
 public class BikeTrafficLight extends TrafficLight
 {
@@ -30,10 +30,9 @@ public class BikeTrafficLight extends TrafficLight
 	}
 
 	@Override
-	TrafficLightUpdateWrapper serialize()
+	TrafficLightUpdate serialize()
 	{
-		TrafficLightUpdateWrapper res = new TrafficLightUpdateWrapper(id, State.valueOf(status), time);
-		return res;
+		return new TrafficLightUpdate(id, State.valueOf(status), time);
 	}
 
 	@Override
@@ -76,11 +75,4 @@ public class BikeTrafficLight extends TrafficLight
 		}
 		return res;
 	}
-
-	@Override
-	boolean interferesWith(TrainTrafficLight other)
-	{
-		return false;
-	}
-
 }

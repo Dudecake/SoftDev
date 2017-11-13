@@ -5,8 +5,10 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Random;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -32,7 +34,8 @@ import com.rabbitmq.client.DefaultConsumer;
 import com.rabbitmq.client.Envelope;
 
 import nl.nhl.software_development.controller.crossing.Crossing;
-import nl.nhl.software_development.controller.net.CrossingUpdateWrapper;
+import nl.nhl.software_development.controller.net.CrossingUpdate;
+import nl.nhl.software_development.controller.net.TimescaleUpdate;
 import nl.nhl.software_development.controller.net.TrafficLightUpdate.State;
 import nl.nhl.software_development.controller.net.TrafficLightUpdate.StateDeserializer;
 import nl.nhl.software_development.controller.net.TrafficLightUpdate.StateSerializer;
@@ -53,17 +56,20 @@ public class App implements Runnable
 			.registerTypeAdapter(DirectionRequest.class, new DirectionRequestSerializer());
 	public static final String SIMULATOR_QUEUE_NAME = "simulator";
 	public static final String COMMANDQUEUE_NAME = "controller";
+	public static final Random R = new Random();
 
+	@SuppressWarnings("unused")
 	private static ScheduledExecutorService executor;
 	private static App p;
 	private static ConnectionFactory factory = new ConnectionFactory();
 	private static Connection connection = null;
+	private static boolean hasReceivedMessage = true;
 
 	private Gson gson;
 	private Crossing crossing;
 	private Channel channel;
 	private String lastCorrelationId;
-	private CrossingUpdateWrapper lastUpdate;
+	private CrossingUpdate lastUpdate;
 
 	public static App instance()
 	{
@@ -86,7 +92,7 @@ public class App implements Runnable
 		crossing = new Crossing();
 		channel = connection.createChannel();
 		lastCorrelationId = "";
-		lastUpdate = new CrossingUpdateWrapper();
+		lastUpdate = new CrossingUpdate();
 		channel.basicQos(1);
 		Map<String, Object> args = new HashMap<>(1);
 		args.put("x-message-ttl", 10000);
@@ -98,6 +104,11 @@ public class App implements Runnable
 			public void handleDelivery(String consumerTag, Envelope envelope, BasicProperties properties, byte[] body)
 					throws IOException
 			{
+				if (!hasReceivedMessage)
+				{
+					hasReceivedMessage = true;
+					p.notifyAll();
+				}
 				try
 				{
 					if (properties.getCorrelationId() != null)
@@ -106,8 +117,19 @@ public class App implements Runnable
 					}
 					String message = new String(body, CHARSET);
 					TrafficUpdateWrapper trafficUpdate = gson.fromJson(message, TrafficUpdateWrapper.class);
-					LOGGER.debug("Got update message");
-					crossing.handleUpdate(trafficUpdate);
+					int updateHash = trafficUpdate.getUpdateHash();
+					if (updateHash == TrafficUpdateWrapper.class.hashCode())
+					{
+						LOGGER.debug("Got traffic update message");
+						crossing.handleUpdate(trafficUpdate);
+					}
+					else if (updateHash == TimescaleUpdate.class.hashCode())
+					{
+						LOGGER.debug("Got timescale update message");
+						double timescale = trafficUpdate.getTimescale();
+						if (timescale >= 0)
+							Time.setTimeScale(timescale);
+					}
 				}
 				catch (JsonSyntaxException ex)
 				{
@@ -115,7 +137,6 @@ public class App implements Runnable
 					LOGGER.debug("Got: ".concat(new String(body, CHARSET)));
 				}
 				channel.basicAck(envelope.getDeliveryTag(), false);
-				run();
 			}
 		};
 		channel.basicConsume(COMMANDQUEUE_NAME, false, consumer);
@@ -130,17 +151,22 @@ public class App implements Runnable
 		Builder propertiesBuilder = new Builder();
 		if (!lastCorrelationId.isEmpty())
 			propertiesBuilder.correlationId(lastCorrelationId);
-		CrossingUpdateWrapper crossingUpdate = crossing.serialize();
-		// if (!lastUpdate.equals(crossingUpdate))
+		CrossingUpdate crossingUpdate = crossing.serialize();
+		if (!lastUpdate.equals(crossingUpdate))
 		{
 			try
 			{
+				LOGGER.debug(String.format("Sending: %s", gson.toJson(crossingUpdate, CrossingUpdate.class)));
 				channel.basicPublish("", SIMULATOR_QUEUE_NAME, propertiesBuilder.build(),
-						gson.toJson(crossingUpdate, CrossingUpdateWrapper.class).getBytes(CHARSET));
+						gson.toJson(crossingUpdate, CrossingUpdate.class).getBytes(CHARSET));
 			}
 			catch (IOException ex)
 			{
 				LOGGER.error("Failed to send message", ex);
+			}
+			catch (Exception ex)
+			{
+				LOGGER.error("Failed to do stuff", ex);
 			}
 			lastUpdate = crossingUpdate;
 		}
@@ -176,7 +202,14 @@ public class App implements Runnable
 			factory.setPassword(line.getOptionValue('p', "softdev"));
 			connection = factory.newConnection();
 			p = new App();
-			// executor.scheduleAtFixedRate(p, 100, 16, TimeUnit.MILLISECONDS);
+			synchronized (p)
+			{
+				while (!hasReceivedMessage)
+				{
+					p.wait();
+				}
+			}
+			executor.scheduleAtFixedRate(p, 0, 16, TimeUnit.MILLISECONDS);
 		}
 		catch (ParseException ex)
 		{

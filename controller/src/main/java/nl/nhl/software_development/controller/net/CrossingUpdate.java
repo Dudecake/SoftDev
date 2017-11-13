@@ -6,24 +6,30 @@ import java.util.stream.Collectors;
 
 public class CrossingUpdate
 {
-	private List<TrafficLightUpdateWrapper> lights;
+	private List<TrafficLightUpdate> lights;
+	@SuppressWarnings("unused")
 	private double timeScale;
 
-	CrossingUpdate()
+	public CrossingUpdate()
 	{
 		lights = new ArrayList<>(0);
 		timeScale = 1.0;
 	}
 
-	CrossingUpdate(List<TrafficLightUpdateWrapper> lights, double timeScale)
+	public CrossingUpdate(List<TrafficLightUpdate> lights, double timeScale)
 	{
 		this.lights = lights;
 		this.timeScale = timeScale;
 	}
 
-	TrafficLightUpdateWrapper getTrafficLightUpdate(int lightId)
+	public TrafficLightUpdate getTrafficLightUpdate(int lightId)
 	{
 		return lights.parallelStream().filter(l -> l.getId() == lightId).collect(Collectors.toList()).get(0);
+	}
+
+	public List<TrafficLightUpdate> getLights()
+	{
+		return lights;
 	}
 
 	@Override
@@ -33,7 +39,7 @@ public class CrossingUpdate
 		if (CrossingUpdate.class.isInstance(obj))
 		{
 			CrossingUpdate other = CrossingUpdate.class.cast(obj);
-			if (this.timeScale != other.timeScale || this.lights.size() != other.lights.size())
+			if (/* this.timeScale != other.timeScale || */this.lights.size() != other.lights.size())
 			{
 				res = false;
 			}

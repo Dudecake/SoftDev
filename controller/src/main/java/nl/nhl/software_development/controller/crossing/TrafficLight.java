@@ -9,14 +9,29 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import nl.nhl.software_development.controller.Time;
+import nl.nhl.software_development.controller.net.TrafficLightUpdate;
 import nl.nhl.software_development.controller.net.TrafficLightUpdate.State;
-import nl.nhl.software_development.controller.net.TrafficLightUpdateWrapper;
 
 public abstract class TrafficLight implements Comparable<TrafficLight>
 {
 	public enum Status
 	{
 		RED, ORANGE, GREEN;
+		public Status inverse()
+		{
+			Status res = Status.ORANGE;
+			switch (this)
+			{
+			case RED:
+				res = Status.GREEN;
+				break;
+			case ORANGE:
+				break;
+			case GREEN:
+				res = Status.RED;
+			}
+			return res;
+		}
 	}
 
 	static class InverseWeightComparator implements Comparator<TrafficLight>
@@ -34,6 +49,21 @@ public abstract class TrafficLight implements Comparable<TrafficLight>
 		public int compare(TrafficLight o1, TrafficLight o2)
 		{
 			return (o1.getWeight() - o2.getWeight());
+		}
+	}
+
+	static void fillInterferingLights(final TrafficLightList lights)
+	{
+		for (TrafficLight t : lights)
+		{
+			for (TrafficLight o : lights)
+			{
+				if (!t.equals(o) && t.interferesWith(o) && !t.getinterferingLights().contains(o))
+				{
+					t.addInterferingLight(o);
+					o.addInterferingLight(t);
+				}
+			}
 		}
 	}
 
@@ -130,11 +160,35 @@ public abstract class TrafficLight implements Comparable<TrafficLight>
 
 	Status setStatus(Status status)
 	{
-		if (status == Status.GREEN)
-			lastTime = Crossing.updateTime;
 		if (canReset(Time.getTime()))
-			this.status = status;
+		{
+			if (this.status == Status.GREEN)
+			{
+				if (status == Status.RED)
+				{
+					this.status = Status.ORANGE;
+				}
+				else
+				{
+					this.status = status;
+				}
+				lastTime = Crossing.updateTime;
+				resetTime = lastTime.plus(cycleTime);
+			}
+			else
+			{
+				this.status = status;
+			}
+		}
 		return this.status;
+	}
+
+	boolean canReset(Duration time)
+	{
+		boolean res = false;
+		if (time.compareTo(resetTime) >= 0)
+			res = true;
+		return res;
 	}
 
 	int getQueueLength()
@@ -164,18 +218,19 @@ public abstract class TrafficLight implements Comparable<TrafficLight>
 		interferingLights = new TrafficLightList();
 	}
 
-	TrafficLightUpdateWrapper serialize()
+	void addInterferingLight(TrafficLight light)
 	{
-		TrafficLightUpdateWrapper res = new TrafficLightUpdateWrapper(id, State.valueOf(status));
-		return res;
+		interferingLights.add(light);
 	}
 
-	boolean canReset(Duration time)
+	TrafficLightList getinterferingLights()
 	{
-		boolean res = false;
-		if (time.compareTo(resetTime) >= 0)
-			res = true;
-		return res;
+		return interferingLights;
+	}
+
+	TrafficLightUpdate serialize()
+	{
+		return new TrafficLightUpdate(id, State.valueOf(status));
 	}
 
 	@Override
@@ -222,6 +277,4 @@ public abstract class TrafficLight implements Comparable<TrafficLight>
 	abstract boolean interferesWith(TrafficLight other);
 
 	abstract boolean interferesWith(TrafficLightList others);
-
-	abstract boolean interferesWith(TrainTrafficLight other);
 }
