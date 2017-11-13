@@ -209,7 +209,7 @@ public class Crossing
 				}
 				if (workLight.getStatus() != Status.RED)
 				{
-					if (workLight.getWeight() == 0)
+					if (workLight.getWeight() == 0 || workLight.getStatus() == Status.ORANGE)
 					{
 						if (workLight.setStatus(Status.RED) == Status.RED)
 						{

@@ -162,11 +162,22 @@ public abstract class TrafficLight implements Comparable<TrafficLight>
 	{
 		if (canReset(Time.getTime()))
 		{
-			this.status = status;
-			if (status == Status.GREEN)
+			if (this.status == Status.GREEN)
 			{
+				if (status == Status.RED)
+				{
+					this.status = Status.ORANGE;
+				}
+				else
+				{
+					this.status = status;
+				}
 				lastTime = Crossing.updateTime;
 				resetTime = lastTime.plus(cycleTime);
+			}
+			else
+			{
+				this.status = status;
 			}
 		}
 		return this.status;

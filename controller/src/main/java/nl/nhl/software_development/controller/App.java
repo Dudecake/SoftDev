@@ -63,6 +63,7 @@ public class App implements Runnable
 	private static App p;
 	private static ConnectionFactory factory = new ConnectionFactory();
 	private static Connection connection = null;
+	private static boolean hasReceivedMessage = true;
 
 	private Gson gson;
 	private Crossing crossing;
@@ -103,6 +104,11 @@ public class App implements Runnable
 			public void handleDelivery(String consumerTag, Envelope envelope, BasicProperties properties, byte[] body)
 					throws IOException
 			{
+				if (!hasReceivedMessage)
+				{
+					hasReceivedMessage = true;
+					p.notifyAll();
+				}
 				try
 				{
 					if (properties.getCorrelationId() != null)
@@ -131,7 +137,6 @@ public class App implements Runnable
 					LOGGER.debug("Got: ".concat(new String(body, CHARSET)));
 				}
 				channel.basicAck(envelope.getDeliveryTag(), false);
-				// run();
 			}
 		};
 		channel.basicConsume(COMMANDQUEUE_NAME, false, consumer);
@@ -197,7 +202,14 @@ public class App implements Runnable
 			factory.setPassword(line.getOptionValue('p', "softdev"));
 			connection = factory.newConnection();
 			p = new App();
-			executor.scheduleAtFixedRate(p, 100, 16, TimeUnit.MILLISECONDS);
+			synchronized (p)
+			{
+				while (!hasReceivedMessage)
+				{
+					p.wait();
+				}
+			}
+			executor.scheduleAtFixedRate(p, 0, 16, TimeUnit.MILLISECONDS);
 		}
 		catch (ParseException ex)
 		{
