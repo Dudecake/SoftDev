@@ -22,7 +22,7 @@ namespace Assets.Logic
                 UnityEditor.EditorApplication.isPlaying = false;
             }
 
-            InvokeRepeating("RepeatingFunction", 1, 0.5f);
+            InvokeRepeating("RepeatingFunction", 1, 2f);
 
             //Vector2 v2_1 = new Vector2(0, 0);
             //Vector2 v2_2 = new Vector2(2, 2);

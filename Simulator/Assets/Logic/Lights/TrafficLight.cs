@@ -12,28 +12,21 @@ namespace Assets.Logic.Lights
 {
     public class TrafficLight : MonoBehaviour
     {
-        private readonly List<TrafficObject> _trafficObjects = new List<TrafficObject>();
+        private int _trafficCount = 0;
+        //private readonly List<TrafficObject> _trafficObjects = new List<TrafficObject>();
 
         public int Id;
         private SpriteRenderer sr;
 
         public int Status { get; set; }
 
-        public void AddTrafficObject(TrafficObject trafficObject)
+        public void SetTrafficCount(int newTrafficCount)
         {
-            _trafficObjects.Add(trafficObject);
-            Communicator.Instance.Send(this.ToString());
-        }
-
-        public void RemoveTrafficObject(TrafficObject trafficObject)
-        {
-            _trafficObjects.Remove(trafficObject);
-            Communicator.Instance.Send(this.ToString());
-        }
-
-        public bool ContainsTrafficObject(TrafficObject trafficObject)
-        {
-            return _trafficObjects.Contains(trafficObject);
+            if (newTrafficCount != this._trafficCount)
+            {
+                this._trafficCount = newTrafficCount;
+                Communicator.Instance.Send(this.ToString());
+            }
         }
 
         public override string ToString()
@@ -41,7 +34,8 @@ namespace Assets.Logic.Lights
             TrafficUpdateViewModel o = new TrafficUpdateViewModel()
             {
                 LightId = this.Id,
-                Count = _trafficObjects.Count,
+                //Count = _trafficObjects.Count,
+                Count = _trafficCount
                 //DirectionRequests = _trafficObjects.Where(t => t is Bus).Select(t => ((Bus) t).DirectionRequest).ToArray()
             };
 

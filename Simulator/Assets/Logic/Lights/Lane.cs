@@ -1,31 +1,33 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
-using Assets.Logic;
-using Assets.Logic.Lights;
-using Assets.Logic.Traffic;
+﻿using Assets.Logic.Traffic;
 using UnityEngine;
 
-public class Lane : MonoBehaviour
+namespace Assets.Logic.Lights
 {
-    private readonly List<TrafficObject> _trafficObjects = new List<TrafficObject>();
-
-    public int Id;
-
-    public TrafficLight TrafficLight;
-    public Path[] Paths;
-
-    public void AddTrafficObject(TrafficObject trafficObject)
+    public class Lane : MonoBehaviour
     {
-        trafficObject = Instantiate(trafficObject);
-        trafficObject.transform.SetParent(this.transform);
-        _trafficObjects.Add(trafficObject);
-        trafficObject.Lane = this;
-        trafficObject.transform.localPosition = Paths[0].points[0];
-    }
+        public int Id;
 
-    public void RemoveTrafficObject(TrafficObject trafficObject)
-    {
-        _trafficObjects.Remove(trafficObject);
+        public TrafficLight TrafficLight;
+        public Path[] Paths;
+
+        private int _trafficCount = 0;
+
+        public void AddTrafficObject(TrafficObject trafficObject)
+        {
+            trafficObject = Instantiate(trafficObject);
+            trafficObject.transform.SetParent(this.transform);
+            trafficObject.Lane = this;
+            trafficObject.transform.localPosition = Paths[0].points[0];
+        }
+
+        public void Update()
+        {
+            Vector2 heading = Paths[0].points[1] - Paths[0].points[0];
+            float distance = heading.magnitude;
+            Vector2 direction = heading / distance; // This is now the normalized direction.
+
+            RaycastHit[] hits = Physics.RaycastAll(Paths[0].points[0], direction, distance);
+            TrafficLight.SetTrafficCount(hits.Length);
+        }
     }
 }
