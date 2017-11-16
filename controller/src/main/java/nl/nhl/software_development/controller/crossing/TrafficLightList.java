@@ -1,6 +1,8 @@
 package nl.nhl.software_development.controller.crossing;
 
 import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 
 class TrafficLightList extends ArrayList<TrafficLight>
 {
@@ -12,19 +14,11 @@ class TrafficLightList extends ArrayList<TrafficLight>
 
 	public TrafficLight getId(int lightId)
 	{
-		TrafficLight res = null;
-		for (TrafficLight t : this)
-		{
-			if (t.id == lightId)
-			{
-				res = t;
-				break;
-			}
-		}
-		if (res == null)
+		List<TrafficLight> resList = this.parallelStream().filter(l -> l.getId() == lightId).collect(Collectors.toList());
+		if (resList.isEmpty())
 		{
 			throw new NullPointerException(String.format("TrafficLight with id %s is not in the TrafficLightList", lightId));
 		}
-		return res;
+		return resList.get(0);
 	}
 }

@@ -7,6 +7,7 @@ import nl.nhl.software_development.controller.net.TrafficLightUpdate;
 public class TrainTrafficLight extends TrafficLight
 {
 	private final Location origin;
+	private final TrainCrossingLight connectedLight;
 
 	Location getOrigin()
 	{
@@ -14,51 +15,50 @@ public class TrainTrafficLight extends TrafficLight
 	}
 
 	@Override
-	Status getStatus()
+	void setQueueLength(int queueLength)
 	{
-		return status.inverse();
+		connectedLight.setQueueLength(queueLength);
 	}
 
 	@Override
 	Status setStatus(Status status)
 	{
-		return super.setStatus(status.inverse());
-	}
-
-	public TrainTrafficLight(int id, Status status, Location origin)
-	{
-		super(id, status.inverse());
-		this.origin = origin;
-		cycleTime = Duration.ofSeconds(30);
+		return status;
 	}
 
 	@Override
 	int getWeight()
 	{
-		return queueLength == 0 ? 0 : Short.MAX_VALUE;
+		return id == 502 ? Short.MAX_VALUE : 0;
+	}
+
+	@Override
+	boolean canReset(Duration time)
+	{
+		return true;
+	}
+
+	public TrainTrafficLight(int id, Status status, Location origin, TrainCrossingLight connectedLight)
+	{
+		super(id, status);
+		this.origin = origin;
+		this.connectedLight = connectedLight;
+		cycleTime = Duration.ofSeconds(30);
 	}
 
 	@Override
 	TrafficLightUpdate serialize()
 	{
-		return super.serialize();
+		return null;
 	}
 
 	@Override
 	boolean interferesWith(TrafficLight other)
 	{
 		boolean res = false;
-		if (BusTrafficLight.class.isInstance(other))
+		if (TrainTrafficLight.class.isInstance(other))
 		{
-			BusTrafficLight busTrafficLight = BusTrafficLight.class.cast(other);
-			if (busTrafficLight.getOrigin() == origin || busTrafficLight.getDestinations().contains(origin))
-				res = true;
-		}
-		else if (CarTrafficLight.class.isInstance(other))
-		{
-			CarTrafficLight carTrafficLight = CarTrafficLight.class.cast(other);
-			if (carTrafficLight.getOrigin() == origin || carTrafficLight.getDestinations().contains(origin))
-				res = true;
+			res = (!this.equals(other));
 		}
 		return res;
 	}
@@ -66,15 +66,7 @@ public class TrainTrafficLight extends TrafficLight
 	@Override
 	boolean interferesWith(TrafficLightList others)
 	{
-		boolean res = false;
-		for (TrafficLight t : others)
-		{
-			if (interferesWith(t))
-			{
-				res = true;
-				break;
-			}
-		}
-		return res;
+		return false;
 	}
+
 }

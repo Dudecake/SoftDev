@@ -8,7 +8,7 @@ public class CrossingUpdate
 {
 	private List<TrafficLightUpdate> lights;
 	@SuppressWarnings("unused")
-	private double timeScale;
+	private Double timeScale;
 
 	public CrossingUpdate()
 	{
@@ -16,7 +16,7 @@ public class CrossingUpdate
 		timeScale = 1.0;
 	}
 
-	public CrossingUpdate(List<TrafficLightUpdate> lights, double timeScale)
+	public CrossingUpdate(List<TrafficLightUpdate> lights, Double timeScale)
 	{
 		this.lights = lights;
 		this.timeScale = timeScale;

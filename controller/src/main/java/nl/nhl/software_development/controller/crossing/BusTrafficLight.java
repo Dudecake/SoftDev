@@ -63,9 +63,9 @@ public class BusTrafficLight extends TrafficLight
 	boolean interferesWith(TrafficLight other)
 	{
 		boolean res = false;
-		if (TrainTrafficLight.class.isInstance(other))
+		if (TrainCrossingLight.class.isInstance(other))
 		{
-			TrainTrafficLight trainTrafficLight = TrainTrafficLight.class.cast(other);
+			TrainCrossingLight trainTrafficLight = TrainCrossingLight.class.cast(other);
 			if (origin == trainTrafficLight.getOrigin() || directionRequests.contains(trainTrafficLight.getOrigin()))
 				res = true;
 		}

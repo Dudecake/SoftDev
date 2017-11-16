@@ -8,7 +8,6 @@ import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import nl.nhl.software_development.controller.App;
 import nl.nhl.software_development.controller.Time;
 import nl.nhl.software_development.controller.crossing.TrafficLight.InverseWeightComparator;
 import nl.nhl.software_development.controller.crossing.TrafficLight.Location;
@@ -110,47 +109,49 @@ public class Crossing
 			lights.add(new BikeTrafficLight(i, Status.RED, location));
 		}
 		// Add train traffic light
-		lights.add(new TrainTrafficLight(501, Status.RED, Location.SOUTH));
+		TrainCrossingLight trainLight = new TrainCrossingLight(601, Status.RED, Location.SOUTH);
+		lights.add(trainLight);
+		lights.add(new TrainTrafficLight(501, Status.RED, Location.SOUTH, trainLight));
+		lights.add(new TrainTrafficLight(502, Status.RED, Location.SOUTH, trainLight));
 		lights.sort(null);
 		this.lights = lights;
 		TrafficLight.fillInterferingLights(this.lights);
-		Thread testThread = new Thread()
-		{
-			@Override
-			public void run()
-			{
-				try
-				{
-					int randomLightA = 101;
-					int randomLightB = 107;
-					for (int i = 0; i < 15; i++)
-					{
-						handleUpdate(new TrafficUpdateWrapper(randomLightA, 1, null, 1.0));
-						handleUpdate(new TrafficUpdateWrapper(randomLightB, 2, null, 1.0));
-						Thread.sleep(2500);
-						if (Crossing.this.lights.getId(randomLightA).getStatus() == Status.GREEN)
-							handleUpdate(new TrafficUpdateWrapper(randomLightA, 0, null, 1.0));
-						if (Crossing.this.lights.getId(randomLightB).getStatus() == Status.GREEN)
-							handleUpdate(new TrafficUpdateWrapper(randomLightB, 0, null, 1.0));
-						randomLightA = App.R.nextInt(10) + 101;
-						randomLightB = App.R.nextInt(10) + 101;
-					}
-				}
-				catch (Exception ex)
-				{
-					LOGGER.error("Error in testingThread", ex);
-				}
-			}
-		};
-		testThread.setDaemon(true);
-		testThread.setName("testthread");
-		testThread.start();
+		// Thread testThread = new Thread()
+		// {
+		// @Override
+		// public void run()
+		// {
+		// try
+		// {
+		// int randomLightA = 101;
+		// int randomLightB = 107;
+		// for (int i = 0; i < 15; i++)
+		// {
+		// handleUpdate(new TrafficUpdateWrapper(randomLightA, 1, null, 1.0));
+		// handleUpdate(new TrafficUpdateWrapper(randomLightB, 2, null, 1.0));
+		// Thread.sleep(2500);
+		// if (Crossing.this.lights.getId(randomLightA).getStatus() == Status.GREEN)
+		// handleUpdate(new TrafficUpdateWrapper(randomLightA, 0, null, 1.0));
+		// if (Crossing.this.lights.getId(randomLightB).getStatus() == Status.GREEN)
+		// handleUpdate(new TrafficUpdateWrapper(randomLightB, 0, null, 1.0));
+		// randomLightA = App.R.nextInt(10) + 101;
+		// randomLightB = App.R.nextInt(10) + 101;
+		// }
+		// }
+		// catch (Exception ex)
+		// {
+		// LOGGER.error("Error in testingThread", ex);
+		// }
+		// }
+		// };
+		// testThread.setDaemon(true);
+		// testThread.setName("testthread");
+		// testThread.start();
 	}
 
 	public CrossingUpdate serialize()
 	{
-		return new CrossingUpdate(lights.parallelStream().map(TrafficLight::serialize).collect(Collectors.toList()),
-				1.0);
+		return new CrossingUpdate(lights.parallelStream().map(TrafficLight::serialize).filter(l -> l != null).collect(Collectors.toList()), 1.0);
 	}
 
 	public static void preUpdate()
