@@ -116,37 +116,6 @@ public class Crossing
 		lights.sort(null);
 		this.lights = lights;
 		TrafficLight.fillInterferingLights(this.lights);
-		// Thread testThread = new Thread()
-		// {
-		// @Override
-		// public void run()
-		// {
-		// try
-		// {
-		// int randomLightA = 101;
-		// int randomLightB = 107;
-		// for (int i = 0; i < 15; i++)
-		// {
-		// handleUpdate(new TrafficUpdateWrapper(randomLightA, 1, null, 1.0));
-		// handleUpdate(new TrafficUpdateWrapper(randomLightB, 2, null, 1.0));
-		// Thread.sleep(2500);
-		// if (Crossing.this.lights.getId(randomLightA).getStatus() == Status.GREEN)
-		// handleUpdate(new TrafficUpdateWrapper(randomLightA, 0, null, 1.0));
-		// if (Crossing.this.lights.getId(randomLightB).getStatus() == Status.GREEN)
-		// handleUpdate(new TrafficUpdateWrapper(randomLightB, 0, null, 1.0));
-		// randomLightA = App.R.nextInt(10) + 101;
-		// randomLightB = App.R.nextInt(10) + 101;
-		// }
-		// }
-		// catch (Exception ex)
-		// {
-		// LOGGER.error("Error in testingThread", ex);
-		// }
-		// }
-		// };
-		// testThread.setDaemon(true);
-		// testThread.setName("testthread");
-		// testThread.start();
 	}
 
 	public CrossingUpdate serialize()
