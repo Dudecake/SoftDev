@@ -6456,7 +6456,7 @@
             permitting Subscription to be used in foreach
             loops.</summary>
         </member>
-        <member name="M:RabbitMQ.Client.MessagePatterns.Subscription.System#Collections#IEnumerator#MoveNext">
+        <member name="M:RabbitMQ.Client.MessagePatterns.Subscription.System#Collections#IEnumerator#TryMoveNext">
             <summary>Implementation of the IEnumerator interface, for
             permitting Subscription to be used in foreach
             loops.</summary>

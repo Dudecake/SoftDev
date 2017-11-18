@@ -7,6 +7,8 @@ namespace Assets.Logic.Lights
 {
     public class Path : MonoBehaviour
     {
+        public int BusDirectionId = -1;
+        public int[] BusAllowedIds;
         public Vector2[] points;
     }
 
@@ -38,7 +40,7 @@ namespace Assets.Logic.Lights
                 pathPoints[i] = Handles.DoPositionHandle(pathPoints[i], handleRotation);
                 if (EditorGUI.EndChangeCheck())
                 {
-                    Undo.RecordObject(path, "Move Point");
+                    Undo.RecordObject(path, "TryMove Point");
                     EditorUtility.SetDirty(path);
                     path.points[i] = handleTransform.InverseTransformPoint(pathPoints[i]);
                 }
