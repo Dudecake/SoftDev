@@ -143,6 +143,7 @@ public abstract class TrafficLight implements Comparable<TrafficLight>
 	protected Status status;
 	protected int time;
 	protected Duration cycleTime;
+	protected Duration orangeTime;
 	protected Duration resetTime;
 	protected Duration lastTime;
 	protected int queueLength;
@@ -186,8 +187,30 @@ public abstract class TrafficLight implements Comparable<TrafficLight>
 	boolean canReset(Duration time)
 	{
 		boolean res = false;
-		if (time.compareTo(resetTime) >= 0)
+		if (id == 103)
+			LOGGER.debug("Called canreset on id 103");
+		Duration compareTime = cycleTime;
+		if (status == Status.ORANGE)
+		{
+			compareTime = orangeTime;
+		}
+		if (time.compareTo(lastTime.plus(compareTime)) > 0)
+		{
 			res = true;
+			if (id == 103)
+			{
+				LOGGER.debug("Id 103 can reset");
+				LOGGER.debug(time.toString().concat(" vs ").concat(compareTime.toString()));
+			}
+		}
+		else
+		{
+			if (id == 103)
+			{
+				LOGGER.debug("Id 103 can not reset");
+				LOGGER.debug(time.toString().concat(" vs ").concat(compareTime.toString()));
+			}
+		}
 		return res;
 	}
 
@@ -213,8 +236,9 @@ public abstract class TrafficLight implements Comparable<TrafficLight>
 		this.status = status;
 		this.time = -1;
 		lastTime = Duration.ZERO;
-		cycleTime = Duration.ofSeconds(30);
-		resetTime = Duration.ZERO;
+		orangeTime = Duration.ofSeconds(5);
+		cycleTime = Duration.ofSeconds(10);
+		resetTime = Duration.ofSeconds(1);
 		interferingLights = new TrafficLightList();
 	}
 

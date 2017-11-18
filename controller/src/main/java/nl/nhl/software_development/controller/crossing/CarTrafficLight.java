@@ -45,9 +45,9 @@ public class CarTrafficLight extends TrafficLight
 				}
 			}
 		}
-		else if (TrainTrafficLight.class.isInstance(other))
+		else if (TrainCrossingLight.class.isInstance(other))
 		{
-			TrainTrafficLight trainTrafficLight = TrainTrafficLight.class.cast(other);
+			TrainCrossingLight trainTrafficLight = TrainCrossingLight.class.cast(other);
 			if (origin == trainTrafficLight.getOrigin() || destinations.contains(trainTrafficLight.getOrigin()))
 				res = true;
 		}

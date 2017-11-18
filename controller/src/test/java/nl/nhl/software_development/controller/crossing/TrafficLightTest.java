@@ -76,7 +76,7 @@ public class TrafficLightTest
 	public void testIntersectionTrain()
 	{
 		CarTrafficLight lightA = new CarTrafficLight(106, Status.RED, Location.SOUTH, Arrays.asList(Location.WEST));
-		TrainTrafficLight lightB = new TrainTrafficLight(601, Status.RED, Location.SOUTH);
+		TrainCrossingLight lightB = new TrainCrossingLight(601, Status.RED, Location.SOUTH);
 		assertTrue(lightA.interferesWith(lightB));
 	}
 
@@ -85,7 +85,7 @@ public class TrafficLightTest
 	public void testNoIntersectionTrain()
 	{
 		CarTrafficLight lightA = new CarTrafficLight(106, Status.RED, Location.EAST, Arrays.asList(Location.WEST));
-		TrainTrafficLight lightB = new TrainTrafficLight(601, Status.RED, Location.SOUTH);
+		TrainCrossingLight lightB = new TrainCrossingLight(601, Status.RED, Location.SOUTH);
 		assertFalse(lightA.interferesWith(lightB));
 	}
 }
