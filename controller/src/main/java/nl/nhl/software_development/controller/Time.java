@@ -7,7 +7,7 @@ import java.time.temporal.ChronoUnit;
 public class Time
 {
 	private static double timeScale = 1.0;
-	private static Duration time = Duration.ZERO;
+	private static Duration time = Duration.ofSeconds(15);
 	private static LocalDateTime lastUpdate = LocalDateTime.now();
 
 	public static double getTimeScale()
@@ -18,6 +18,11 @@ public class Time
 	public static void setTimeScale(double timeScale)
 	{
 		Time.timeScale = timeScale;
+	}
+
+	public static TimeAck getTimeScaleAck()
+	{
+		return new TimeAck(timeScale);
 	}
 
 	public static Duration getTime()
@@ -35,5 +40,16 @@ public class Time
 		LocalDateTime updateTime = LocalDateTime.now();
 		time = time.plus((long)(Duration.between(lastUpdate, updateTime).toMillis() * timeScale), ChronoUnit.MILLIS);
 		lastUpdate = updateTime;
+	}
+
+	public static class TimeAck
+	{
+		@SuppressWarnings("unused")
+		private Double speed;
+
+		public TimeAck(Double speed)
+		{
+			this.speed = speed;
+		}
 	}
 }

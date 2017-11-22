@@ -1,15 +1,36 @@
 package nl.nhl.software_development.controller.crossing;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import nl.nhl.software_development.controller.net.TrafficLightUpdate;
 import nl.nhl.software_development.controller.net.TrafficLightUpdate.State;
 
 public class BikeTrafficLight extends TrafficLight
 {
 	private final Location origin;
+	private List<BikeTrafficLight> pairedLights;
+	private BikeTrafficLight pairedLight;
 
 	Location getOrigin()
 	{
 		return origin;
+	}
+
+	@Override
+	Status setStatus(Status status)
+	{
+		Status res = super.setStatus(status);
+		if (pairedLight != null)
+		{
+			pairedLight.status = res;
+			if (res == Status.GREEN)
+			{
+				lastTime = Crossing.updateTime;
+				resetTime = lastTime.plus(cycleTime);
+			}
+		}
+		return res;
 	}
 
 	public BikeTrafficLight(int id, Status status, Location origin)
@@ -18,6 +39,8 @@ public class BikeTrafficLight extends TrafficLight
 		if (id < 300 || id > 500)
 			throw new IllegalArgumentException("id doesn't correspond with a bike or pedestrian traffic light");
 		this.origin = origin;
+		this.pairedLights = new ArrayList<>();
+		this.pairedLight = null;
 	}
 
 	public BikeTrafficLight(int id, Status status, Location origin, int time)
@@ -27,6 +50,8 @@ public class BikeTrafficLight extends TrafficLight
 			throw new IllegalArgumentException("id doesn't correspond with a bike or pedestrian traffic light");
 		this.origin = origin;
 		this.time = time;
+		this.pairedLights = new ArrayList<>();
+		this.pairedLight = null;
 	}
 
 	@Override
@@ -51,10 +76,13 @@ public class BikeTrafficLight extends TrafficLight
 			}
 			else if (CarTrafficLight.class.isInstance(other))
 			{
-				CarTrafficLight carTrafficLight = CarTrafficLight.class.cast(other);
-				if (carTrafficLight.getOrigin() == origin || carTrafficLight.getDestinations().contains(origin))
+				if (other.id != 106)
 				{
-					res = true;
+					CarTrafficLight carTrafficLight = CarTrafficLight.class.cast(other);
+					if (carTrafficLight.getOrigin() == origin || carTrafficLight.getDestinations().contains(origin))
+					{
+						res = true;
+					}
 				}
 			}
 		}
@@ -74,5 +102,19 @@ public class BikeTrafficLight extends TrafficLight
 			}
 		}
 		return res;
+	}
+
+	void pairLights(BikeTrafficLight... lights)
+	{
+		for (BikeTrafficLight l : lights)
+		{
+			pairedLights.add(l);
+		}
+	}
+
+	static void pairLights(BikeTrafficLight lightA, BikeTrafficLight lightB)
+	{
+		lightA.pairedLight = lightB;
+		lightB.pairedLight = lightA;
 	}
 }

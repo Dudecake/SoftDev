@@ -91,23 +91,33 @@ public class Crossing
 		}
 		// Add pedestrian traffic lights
 		location = Location.WEST;
-		for (int i = 401; i < 407; i++)
+		for (int i = 401; i < 412; i++)
 		{
 			switch (i)
 			{
 			case 402:
 			case 403:
+			case 407:
+			case 408:
 				location = Location.NORTH;
 				break;
 			case 404:
+			case 409:
+			case 410:
 				location = Location.EAST;
 				break;
-
 			default:
 				break;
 			}
 			lights.add(new BikeTrafficLight(i, Status.RED, location));
 		}
+		// Pair trafficlights
+		BikeTrafficLight.pairLights(BikeTrafficLight.class.cast(lights.getId(301)), BikeTrafficLight.class.cast(lights.getId(305)));
+		BikeTrafficLight.pairLights(BikeTrafficLight.class.cast(lights.getId(302)), BikeTrafficLight.class.cast(lights.getId(303)));
+		BikeTrafficLight.pairLights(BikeTrafficLight.class.cast(lights.getId(401)), BikeTrafficLight.class.cast(lights.getId(406)));
+		BikeTrafficLight.pairLights(BikeTrafficLight.class.cast(lights.getId(402)), BikeTrafficLight.class.cast(lights.getId(403)));
+		BikeTrafficLight.pairLights(BikeTrafficLight.class.cast(lights.getId(404)), BikeTrafficLight.class.cast(lights.getId(405)));
+
 		// Add train traffic light
 		TrainCrossingLight trainLight = new TrainCrossingLight(601, Status.RED, Location.SOUTH);
 		lights.add(trainLight);

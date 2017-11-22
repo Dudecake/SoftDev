@@ -51,18 +51,21 @@ public class Crossing
 		}
 		// Add pedestrian traffic lights
 		location = Location.WEST;
-		for (int i = 401; i < 407; i++)
+		for (int i = 401; i < 412; i++)
 		{
 			switch (i)
 			{
 			case 402:
 			case 403:
+			case 407:
+			case 408:
 				location = Location.NORTH;
 				break;
 			case 404:
+			case 409:
+			case 410:
 				location = Location.EAST;
 				break;
-
 			default:
 				break;
 			}

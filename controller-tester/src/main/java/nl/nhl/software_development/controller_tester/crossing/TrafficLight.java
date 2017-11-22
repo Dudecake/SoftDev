@@ -1,6 +1,6 @@
 package nl.nhl.software_development.controller_tester.crossing;
 
-public class TrafficLight
+public class TrafficLight implements Comparable<TrafficLight>
 {
 	public enum Status
 	{
@@ -84,6 +84,12 @@ public class TrafficLight
 		this.status = status;
 		this.queueLength = 0;
 		this.location = location;
+	}
+
+	@Override
+	public int compareTo(TrafficLight other)
+	{
+		return this.id - other.id;
 	}
 
 }

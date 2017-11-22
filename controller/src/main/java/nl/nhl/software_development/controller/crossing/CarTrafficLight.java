@@ -1,6 +1,7 @@
 package nl.nhl.software_development.controller.crossing;
 
 import java.util.List;
+import java.util.stream.IntStream;
 
 public class CarTrafficLight extends TrafficLight
 {
@@ -53,10 +54,13 @@ public class CarTrafficLight extends TrafficLight
 		}
 		else if (BikeTrafficLight.class.isInstance(other))
 		{
-			BikeTrafficLight bikeTrafficLight = BikeTrafficLight.class.cast(other);
-			if (origin == bikeTrafficLight.getOrigin() || destinations.contains(bikeTrafficLight.getOrigin()))
+			if (IntStream.of(new int[] { 304, 404, 405 }).noneMatch(x -> x == id))
 			{
-				res = true;
+				BikeTrafficLight bikeTrafficLight = BikeTrafficLight.class.cast(other);
+				if (origin == bikeTrafficLight.getOrigin() || destinations.contains(bikeTrafficLight.getOrigin()))
+				{
+					res = true;
+				}
 			}
 		}
 		else if (BusTrafficLight.class.isInstance(other))

@@ -59,6 +59,17 @@ public class App
 	private Channel channel;
 	private String correlationId;
 
+	public static class TimeAck
+	{
+		@SuppressWarnings("unused")
+		private Double speed;
+
+		public TimeAck(Double speed)
+		{
+			this.speed = speed;
+		}
+	}
+
 	public static App instance()
 	{
 		return p;
@@ -83,14 +94,20 @@ public class App
 			public void handleDelivery(String consumerTag, Envelope envelope, BasicProperties properties, byte[] body) throws IOException
 			{
 				String message = new String(body, CHARSET);
-				CrossingUpdate crossingUpdate = gson.fromJson(message, CrossingUpdate.class);
-				for (TrafficLightUpdate u : crossingUpdate.getLights())
+				if (!message.contains("Speed"))
 				{
-					crossing.getLightById(u.getId()).setStatus(Status.valueOf(u.getState().asInt()));
+					CrossingUpdate crossingUpdate = gson.fromJson(message, CrossingUpdate.class);
+					for (TrafficLightUpdate u : crossingUpdate.getLights())
+					{
+						crossing.getLightById(u.getId()).setStatus(Status.valueOf(u.getState().asInt()));
+					}
 				}
 				channel.basicAck(envelope.getDeliveryTag(), false);
 			}
 		};
+		channel.basicConsume(SIMULATOR_QUEUE_NAME, false, consumer);
+
+		channel.basicPublish("", COMMANDQUEUE_NAME, properties, "{Speed:5.0}".getBytes(CHARSET));
 
 		Thread testThread = new Thread()
 		{
@@ -127,7 +144,6 @@ public class App
 		testThread.setDaemon(true);
 		testThread.setName("testthread");
 		testThread.start();
-		channel.basicConsume(SIMULATOR_QUEUE_NAME, false, consumer);
 	}
 
 	public static void main(String[] args)

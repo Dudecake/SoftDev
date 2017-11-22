@@ -33,6 +33,7 @@ import com.rabbitmq.client.Consumer;
 import com.rabbitmq.client.DefaultConsumer;
 import com.rabbitmq.client.Envelope;
 
+import nl.nhl.software_development.controller.Time.TimeAck;
 import nl.nhl.software_development.controller.crossing.Crossing;
 import nl.nhl.software_development.controller.net.CrossingUpdate;
 import nl.nhl.software_development.controller.net.TrafficLightUpdate.State;
@@ -60,7 +61,7 @@ public class App implements Runnable
 	private static App p;
 	private static ConnectionFactory factory = new ConnectionFactory();
 	private static Connection connection = null;
-	private static boolean hasReceivedMessage = true;
+	private static boolean hasReceivedMessage = false;
 
 	private Gson gson;
 	private Crossing crossing;
@@ -116,6 +117,15 @@ public class App implements Runnable
 					}
 					String message = new String(body, CHARSET);
 					TrafficUpdateWrapper trafficUpdate = gson.fromJson(message, TrafficUpdateWrapper.class);
+					if (message.contains("Speed"))
+					{
+						LOGGER.debug(message);
+						if (trafficUpdate.getTimescale() != null)
+						{
+							LOGGER.debug("Timescale = ".concat(trafficUpdate.getTimescale().toString()));
+						}
+						LOGGER.debug("Got speed update");
+					}
 					int updateHash = trafficUpdate.getUpdateHash();
 					if (updateHash == TrafficUpdate.class.hashCode())
 					{
@@ -127,6 +137,8 @@ public class App implements Runnable
 						double timescale = trafficUpdate.getTimescale();
 						if (timescale >= 0)
 							Time.setTimeScale(timescale);
+						channel.basicPublish("", SIMULATOR_QUEUE_NAME, new Builder().correlationId(lastCorrelationId).build(),
+								gson.toJson(Time.getTimeScaleAck(), TimeAck.class).getBytes(CHARSET));
 					}
 				}
 				catch (JsonSyntaxException ex)
@@ -178,6 +190,10 @@ public class App implements Runnable
 		options.addOption(Option.builder("p").longOpt("password").hasArg().argName("password").desc("Password to use when connecting to server").build());
 		options.addOption(Option.builder("?").longOpt("help").desc("Print help message").build());
 
+		// ch.qos.logback.classic.Logger root =
+		// (ch.qos.logback.classic.Logger)org.slf4j.LoggerFactory.getLogger(ch.qos.logback.classic.Logger.ROOT_LOGGER_NAME);
+		// root.setLevel(ch.qos.logback.classic.Level.TRACE);
+
 		CommandLineParser parser = new DefaultParser();
 		executor = Executors.newSingleThreadScheduledExecutor();
 		try
@@ -195,12 +211,15 @@ public class App implements Runnable
 			factory.setPassword(line.getOptionValue('p', "softdev"));
 			connection = factory.newConnection();
 			p = new App();
+			LOGGER.info("Started ".concat("Program"));
 			synchronized (p)
 			{
 				while (!hasReceivedMessage)
 				{
+					LOGGER.info("Started waiting for messages");
 					p.wait();
 				}
+				LOGGER.info("Message received, starting logicloop");
 			}
 			executor.scheduleAtFixedRate(p, 0, 500, TimeUnit.MILLISECONDS);
 		}
@@ -216,6 +235,5 @@ public class App implements Runnable
 			LOGGER.error("Failed to start Program", ex);
 			System.exit(1);
 		}
-		LOGGER.info("Started ".concat("Program"));
 	}
 }

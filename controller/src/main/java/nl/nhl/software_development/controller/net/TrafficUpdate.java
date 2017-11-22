@@ -48,8 +48,7 @@ public class TrafficUpdate
 	public static class DirectionRequestDeserializer implements JsonDeserializer<DirectionRequest>
 	{
 		@Override
-		public DirectionRequest deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context)
-				throws JsonParseException
+		public DirectionRequest deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException
 		{
 			return DirectionRequest.valueOf(json.getAsInt());
 		}
@@ -71,7 +70,7 @@ public class TrafficUpdate
 
 	TrafficUpdate()
 	{
-		this.lightId = 101;
+		this.lightId = -1;
 		this.count = 0;
 		this.directionRequests = null;
 	}

@@ -28,14 +28,14 @@ public class TrafficUpdateWrapper
 	public int getUpdateHash()
 	{
 		int res = -1;
-		if (trafficUpdate != null)
-			res = TrafficUpdate.class.hashCode();
-		else
+		if (trafficUpdate.getLightId() == -1)
 			res = Double.class.hashCode();
+		else
+			res = TrafficUpdate.class.hashCode();
 		return res;
 	}
 
-	public double getTimescale()
+	public Double getTimescale()
 	{
 		return speed;
 	}

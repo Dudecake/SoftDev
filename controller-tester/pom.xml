@@ -28,7 +28,7 @@
         <configuration>
           <archive>
             <manifest>
-              <mainClass>nl.nhl.software_development.controller.App</mainClass>
+              <mainClass>nl.nhl.software_development.controller_tester.App</mainClass>
             </manifest>
           </archive>
           <descriptorRefs>

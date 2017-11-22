@@ -168,17 +168,25 @@ public abstract class TrafficLight implements Comparable<TrafficLight>
 				if (status == Status.RED)
 				{
 					this.status = Status.ORANGE;
+					if (id == 101)
+						LOGGER.debug("Setting 101 to ".concat(this.status.toString()));
 				}
 				else
 				{
 					this.status = status;
+					if (id == 101)
+						LOGGER.debug("Setting 101 to ".concat(this.status.toString()));
 				}
 				lastTime = Crossing.updateTime;
-				resetTime = lastTime.plus(cycleTime);
+				resetTime = resetTime.plus(cycleTime);
+				if (id == 101)
+					LOGGER.debug("Setting 101 resetTime on ".concat(resetTime.toString()));
 			}
 			else
 			{
 				this.status = status;
+				if (id == 101)
+					LOGGER.debug("Setting 101 to ".concat(this.status.toString()));
 			}
 		}
 		return this.status;
@@ -187,28 +195,28 @@ public abstract class TrafficLight implements Comparable<TrafficLight>
 	boolean canReset(Duration time)
 	{
 		boolean res = false;
-		if (id == 103)
-			LOGGER.debug("Called canreset on id 103");
+		if (id == 101)
+			LOGGER.trace("Called canreset on id 101");
 		Duration compareTime = cycleTime;
 		if (status == Status.ORANGE)
 		{
 			compareTime = orangeTime;
 		}
-		if (time.compareTo(lastTime.plus(compareTime)) > 0)
+		if (time.compareTo(resetTime) > 0)
 		{
 			res = true;
-			if (id == 103)
+			if (id == 101)
 			{
-				LOGGER.debug("Id 103 can reset");
-				LOGGER.debug(time.toString().concat(" vs ").concat(compareTime.toString()));
+				LOGGER.trace("Id 101 can reset");
+				LOGGER.trace(time.toString().concat(" vs ").concat(lastTime.plus(compareTime).toString()));
 			}
 		}
 		else
 		{
-			if (id == 103)
+			if (id == 101)
 			{
-				LOGGER.debug("Id 103 can not reset");
-				LOGGER.debug(time.toString().concat(" vs ").concat(compareTime.toString()));
+				LOGGER.trace("Id 101 can not reset");
+				LOGGER.trace(time.toString().concat(" vs ").concat(lastTime.plus(compareTime).toString()));
 			}
 		}
 		return res;
@@ -254,7 +262,16 @@ public abstract class TrafficLight implements Comparable<TrafficLight>
 
 	TrafficLightUpdate serialize()
 	{
-		return new TrafficLightUpdate(id, State.valueOf(status));
+		int time = -1;
+		if (id == 301 || id == 302)
+		{
+			for (TrafficLight l : interferingLights)
+			{
+				if (time < l.resetTime.toMillis() / 1000)
+					time = (int)(l.resetTime.toMillis() / 1000);
+			}
+		}
+		return new TrafficLightUpdate(id, State.valueOf(status), time);
 	}
 
 	@Override
