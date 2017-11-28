@@ -138,6 +138,7 @@ public abstract class TrafficLight implements Comparable<TrafficLight>
 		}
 	}
 
+	private static final int DEBUGID = 101;
 	protected static final Logger LOGGER = LoggerFactory.getLogger(TrafficLight.class);
 	protected final int id;
 	protected Status status;
@@ -168,26 +169,26 @@ public abstract class TrafficLight implements Comparable<TrafficLight>
 				if (status == Status.RED)
 				{
 					this.status = Status.ORANGE;
-					if (id == 101)
-						LOGGER.debug("Setting 101 to ".concat(this.status.toString()));
+					if (id == DEBUGID)
+						LOGGER.debug(String.format("Setting %d to %s", DEBUGID, this.status.toString()));
 				}
 				else
 				{
 					this.status = status;
-					if (id == 101)
-						LOGGER.debug("Setting 101 to ".concat(this.status.toString()));
+					if (id == DEBUGID)
+						LOGGER.debug(String.format("Setting %d to %s", DEBUGID, this.status.toString()));
 				}
-				lastTime = Crossing.updateTime;
-				resetTime = resetTime.plus(cycleTime);
-				if (id == 101)
-					LOGGER.debug("Setting 101 resetTime on ".concat(resetTime.toString()));
 			}
 			else
 			{
 				this.status = status;
-				if (id == 101)
-					LOGGER.debug("Setting 101 to ".concat(this.status.toString()));
+				if (id == DEBUGID)
+					LOGGER.debug(String.format("Setting %d to %s", DEBUGID, this.status.toString()));
 			}
+			lastTime = Crossing.updateTime;
+			resetTime = lastTime.plus(cycleTime);
+			if (id == DEBUGID)
+				LOGGER.debug(String.format("Setting %d resetTime on %s (current time %s)", DEBUGID, resetTime.toString(), Time.getTime().toString()));
 		}
 		return this.status;
 	}
@@ -195,28 +196,28 @@ public abstract class TrafficLight implements Comparable<TrafficLight>
 	boolean canReset(Duration time)
 	{
 		boolean res = false;
-		if (id == 101)
-			LOGGER.trace("Called canreset on id 101");
-		Duration compareTime = cycleTime;
-		if (status == Status.ORANGE)
-		{
-			compareTime = orangeTime;
-		}
+		if (id == DEBUGID)
+			LOGGER.trace(String.format("Called canreset on id %d", DEBUGID));
+		// Duration compareTime = cycleTime;
+		// if (status == Status.ORANGE)
+		// {
+		// compareTime = orangeTime;
+		// }
 		if (time.compareTo(resetTime) > 0)
 		{
 			res = true;
-			if (id == 101)
+			if (id == DEBUGID)
 			{
-				LOGGER.trace("Id 101 can reset");
-				LOGGER.trace(time.toString().concat(" vs ").concat(lastTime.plus(compareTime).toString()));
+				LOGGER.trace(String.format("Id %s can reset", DEBUGID));
+				LOGGER.trace(String.format("%s vs %s", time.toString(), resetTime.toString()));
 			}
 		}
 		else
 		{
-			if (id == 101)
+			if (id == DEBUGID)
 			{
-				LOGGER.trace("Id 101 can not reset");
-				LOGGER.trace(time.toString().concat(" vs ").concat(lastTime.plus(compareTime).toString()));
+				LOGGER.trace(String.format("Id %s can not reset", DEBUGID));
+				LOGGER.trace(String.format("%s vs %s", time.toString(), resetTime.toString()));
 			}
 		}
 		return res;
@@ -312,7 +313,7 @@ public abstract class TrafficLight implements Comparable<TrafficLight>
 	@Override
 	public String toString()
 	{
-		return String.format("TrafficLight id: %i", id);
+		return String.format("TrafficLight id: %d", id);
 	}
 
 	abstract boolean interferesWith(TrafficLight other);

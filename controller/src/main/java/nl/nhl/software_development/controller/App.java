@@ -155,29 +155,37 @@ public class App implements Runnable
 	@Override
 	public void run()
 	{
-		Time.updateTime();
-		Crossing.preUpdate();
-		crossing.update();
-		Builder propertiesBuilder = new Builder();
-		if (!lastCorrelationId.isEmpty())
-			propertiesBuilder.correlationId(lastCorrelationId);
-		CrossingUpdate crossingUpdate = crossing.serialize();
-		if (!lastUpdate.equals(crossingUpdate))
+		try
 		{
-			try
+			Time.updateTime();
+			Crossing.preUpdate();
+			crossing.update();
+			Builder propertiesBuilder = new Builder();
+			if (!lastCorrelationId.isEmpty())
+				propertiesBuilder.correlationId(lastCorrelationId);
+			CrossingUpdate crossingUpdate = crossing.serialize();
+			if (!lastUpdate.equals(crossingUpdate))
 			{
-				LOGGER.debug(String.format("Sending: %s", gson.toJson(crossingUpdate, CrossingUpdate.class)));
-				channel.basicPublish("", SIMULATOR_QUEUE_NAME, propertiesBuilder.build(), gson.toJson(crossingUpdate, CrossingUpdate.class).getBytes(CHARSET));
+				try
+				{
+					LOGGER.debug(String.format("Sending: %s", gson.toJson(crossingUpdate, CrossingUpdate.class)));
+					channel.basicPublish("", SIMULATOR_QUEUE_NAME, propertiesBuilder.build(),
+							gson.toJson(crossingUpdate, CrossingUpdate.class).getBytes(CHARSET));
+				}
+				catch (IOException ex)
+				{
+					LOGGER.error("Failed to send message", ex);
+				}
+				catch (Exception ex)
+				{
+					LOGGER.error("Failed to do stuff", ex);
+				}
+				lastUpdate = crossingUpdate;
 			}
-			catch (IOException ex)
-			{
-				LOGGER.error("Failed to send message", ex);
-			}
-			catch (Exception ex)
-			{
-				LOGGER.error("Failed to do stuff", ex);
-			}
-			lastUpdate = crossingUpdate;
+		}
+		catch (Exception ex)
+		{
+			LOGGER.warn("Failed to update", ex);
 		}
 	}
 
@@ -190,9 +198,8 @@ public class App implements Runnable
 		options.addOption(Option.builder("p").longOpt("password").hasArg().argName("password").desc("Password to use when connecting to server").build());
 		options.addOption(Option.builder("?").longOpt("help").desc("Print help message").build());
 
-		// ch.qos.logback.classic.Logger root =
-		// (ch.qos.logback.classic.Logger)org.slf4j.LoggerFactory.getLogger(ch.qos.logback.classic.Logger.ROOT_LOGGER_NAME);
-		// root.setLevel(ch.qos.logback.classic.Level.TRACE);
+		ch.qos.logback.classic.Logger root = (ch.qos.logback.classic.Logger)org.slf4j.LoggerFactory.getLogger(ch.qos.logback.classic.Logger.ROOT_LOGGER_NAME);
+		root.setLevel(ch.qos.logback.classic.Level.TRACE);
 
 		CommandLineParser parser = new DefaultParser();
 		executor = Executors.newSingleThreadScheduledExecutor();
