@@ -20,8 +20,8 @@ namespace Assets.Logic
         private const string ReceiveQueue = "simulator";
         private const string HostName = "localhost";
         private const string VirtualHost = "/6";
-        private const string UserName = "guest";
-        private const string Password = "guest";
+        private const string UserName = "softdev";
+        private const string Password = "softdev";
 
         private readonly ConnectionFactory _factory = new ConnectionFactory()
         {

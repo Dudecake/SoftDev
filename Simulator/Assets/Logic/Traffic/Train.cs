@@ -1,8 +1,8 @@
-﻿namespace Assets.Logic.Traffic
+namespace Assets.Logic.Traffic
 {
-    public class Bus : TrafficObject
+    public class Train : TrafficObject
     {
-        protected override float Speed { get; set; } = 1f;
+        protected override float Speed { get; set; } = 2f;
 
         protected override void TryMove()
         {

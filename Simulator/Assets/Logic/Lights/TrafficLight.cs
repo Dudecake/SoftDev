@@ -12,35 +12,12 @@ namespace Assets.Logic.Lights
 {
     public class TrafficLight : MonoBehaviour
     {
-        private int _trafficCount = 0;
-        //private readonly List<TrafficObject> _trafficObjects = new List<TrafficObject>();
+        public int TrafficCount { get; set; }
 
         public int Id;
         private SpriteRenderer sr;
 
         public int Status { get; set; }
-
-        public void SetTrafficCount(int newTrafficCount)
-        {
-            if (newTrafficCount != this._trafficCount)
-            {
-                this._trafficCount = newTrafficCount;
-                Communicator.Instance.Send(this.ToString());
-            }
-        }
-
-        public override string ToString()
-        {
-            TrafficUpdateViewModel o = new TrafficUpdateViewModel()
-            {
-                LightId = this.Id,
-                //Count = _trafficObjects.Count,
-                Count = _trafficCount
-                //DirectionRequests = _trafficObjects.Where(t => t is Bus).Select(t => ((Bus) t).DirectionRequest).ToArray()
-            };
-
-            return JsonConvert.SerializeObject(new TrafficUpdateContainerViewModel {TrafficUpdate = o});
-        }
 
         private void Start()
         {
@@ -59,6 +36,9 @@ namespace Assets.Logic.Lights
                     break;
                 case 2:
                     this.sr.color = Color.green;
+                    break;
+                default:
+                    this.sr.color = Color.red;
                     break;
             }
         }
