@@ -150,26 +150,45 @@ public class Crossing
 			workLights.clear();
 			workLights.addAll(lights);
 			workLights.sort(WEIGHT_COMPARATOR);
-			TrafficLight workLight = workLights.get(0);
+			List<TrainTrafficLight> trainLights = workLights.getAllTrainLights();
 			// if (workLight.getWeight() == 0)
 			// {
 			// System.out.println("Weight is 0");
 			// }
-			if (workLight.getWeight() == Short.MAX_VALUE && workLight.getStatus() != Status.GREEN)
+			for (TrainTrafficLight light : trainLights)
 			{
-				for (int i = 1; i < workLights.size();)
+				if (light.getStatus() != Status.GREEN)
 				{
-					if (workLights.get(i).interferesWith(workLight))
+					for (int i = 0; i < workLights.size();)
 					{
-						workLights.get(i).setStatus(Status.RED);
-						workLights.remove(i);
-					}
-					else
-					{
-						i++;
+						if (workLights.get(i).interferesWith(light))
+						{
+							workLights.get(i).setStatus(Status.RED);
+							workLights.remove(i);
+						}
+						else
+						{
+							i++;
+						}
 					}
 				}
 			}
+			TrafficLight workLight = workLights.get(0);
+			// if (workLight.getWeight() == Short.MAX_VALUE && workLight.getStatus() != Status.GREEN)
+			// {
+			// for (int i = 0; i < workLights.size();)
+			// {
+			// if (workLights.get(i).interferesWith(workLight))
+			// {
+			// workLights.get(i).setStatus(Status.RED);
+			// workLights.remove(i);
+			// }
+			// else
+			// {
+			// i++;
+			// }
+			// }
+			// }
 			TrafficLightList greenLights = new TrafficLightList();
 			TrafficLightList interferingLights = new TrafficLightList();
 			lightTrimLoop: for (int i = 1; i < workLights.size(); i++)
@@ -217,6 +236,10 @@ public class Crossing
 						i++;
 					}
 				}
+			}
+			if (lights.getId(104).getStatus() == Status.GREEN && lights.getId(107).getStatus() == Status.GREEN)
+			{
+				LOGGER.error("Shit be whack yo");
 			}
 			// TODO: Add logic
 		}

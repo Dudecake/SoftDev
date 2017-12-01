@@ -186,7 +186,10 @@ public abstract class TrafficLight implements Comparable<TrafficLight>
 					LOGGER.debug(String.format("Setting %d to %s", DEBUGID, this.status.toString()));
 			}
 			lastTime = Crossing.updateTime;
-			resetTime = lastTime.plus(cycleTime);
+			if (this.status == Status.ORANGE)
+				resetTime = lastTime.plus(orangeTime);
+			else
+				resetTime = lastTime.plus(cycleTime);
 			if (id == DEBUGID)
 				LOGGER.debug(String.format("Setting %d resetTime on %s (current time %s)", DEBUGID, resetTime.toString(), Time.getTime().toString()));
 		}

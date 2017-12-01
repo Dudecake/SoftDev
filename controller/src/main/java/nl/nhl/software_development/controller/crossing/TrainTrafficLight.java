@@ -49,7 +49,7 @@ public class TrainTrafficLight extends TrafficLight
 	@Override
 	TrafficLightUpdate serialize()
 	{
-		return null;
+		return id == 501 ? super.serialize() : null;
 	}
 
 	@Override

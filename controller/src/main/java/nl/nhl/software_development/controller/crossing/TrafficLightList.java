@@ -21,4 +21,9 @@ class TrafficLightList extends ArrayList<TrafficLight>
 		}
 		return resList.get(0);
 	}
+
+	public List<TrainTrafficLight> getAllTrainLights()
+	{
+		return this.parallelStream().filter(TrainTrafficLight.class::isInstance).map(TrainTrafficLight.class::cast).collect(Collectors.toList());
+	}
 }
