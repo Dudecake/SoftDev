@@ -18,8 +18,9 @@ namespace Assets.Logic
         
         private const string SendQueue = "controller";
         private const string ReceiveQueue = "simulator";
-        private const string HostName = "localhost";
-        private const string VirtualHost = "/6";
+        private const string HostName = "141.252.237.90";
+
+        private const string VirtualHost = "/12";
         private const string UserName = "softdev";
         private const string Password = "softdev";
 
@@ -52,19 +53,24 @@ namespace Assets.Logic
             _channel.BasicConsume(queue: ReceiveQueue, autoAck: true, consumer: _consumer);
         }
 
-        public void AttachReceiver(EventHandler<BasicDeliverEventArgs> eventHandler)
+        internal void AttachReceiver(EventHandler<BasicDeliverEventArgs> eventHandler)
         {
             _consumer.Received += eventHandler;
         }
 
-        public void Send(string message)
+        internal void Send(string message)
         {
             byte[] body = Encoding.UTF8.GetBytes(message);
             _channel.BasicPublish(exchange: "",
                 routingKey: SendQueue,
                 basicProperties: null,
                 body: body);
-            Debug.Log($"Sent: {message}");
+            //Debug.Log($"Sent: {message}");
+        }
+
+        internal void Send(SpeedViewModel speedViewModel)
+        {
+            this.Send(JsonConvert.SerializeObject(speedViewModel));
         }
     }
 }
