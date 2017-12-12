@@ -4,6 +4,20 @@ namespace Assets.Scripts.TrafficObjects
 {
     public class Train : TrafficObject
     {
+        //private void Update()
+        //{
+        //    if (TargetIsLight)
+        //    {
+        //        Target.TrafficLight.AddTraffic(this);
+        //    }
+        //    else
+        //    {
+        //        Target.TrafficLight.RemoveTraffic(this);
+        //    }
+        //}
+
+        public bool IgnoreLight { get; set; } = false;
+
         protected override void Move()
         {
             Vector3 targetDir = Lane.Paths[PathIndex].PathPoints[PathPointIndex].Point - transform.position;
@@ -16,12 +30,16 @@ namespace Assets.Scripts.TrafficObjects
 
         protected override bool LightIsGreen()
         {
-            return Target.TrafficLight == null || Target.TrafficLight.Status == 2;
+            return IgnoreLight || Target.TrafficLight == null || Target.TrafficLight.Status == 2;
         }
 
         protected override bool SweepTestFront()
         {
             return false; // Train shouldnt check for obstacles
         }
+
+        protected override void RemoveTraffic() { }
+
+        protected override void AddTraffic() { }
     }
 }

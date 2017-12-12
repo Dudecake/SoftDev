@@ -51,6 +51,10 @@ namespace Assets.Scripts.TrafficObjects
         protected abstract bool LightIsGreen();
         protected abstract bool SweepTestFront();
 
+        protected virtual void RemoveTraffic()
+        {
+            Target.TrafficLight.RemoveTraffic(this);
+        }
         protected virtual void AddTraffic()
         {
             Target.TrafficLight.AddTraffic(this);

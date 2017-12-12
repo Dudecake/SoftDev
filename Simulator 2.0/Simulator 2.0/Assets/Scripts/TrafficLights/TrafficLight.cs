@@ -11,7 +11,7 @@ namespace Assets.Scripts.TrafficLights
         protected readonly Dictionary<TrafficObject, int> QueuedTraffic = new Dictionary<TrafficObject, int>();
 
         public int Id;
-        public int Status { get; set; } = 0;
+        public virtual int Status { get; set; } = 0;
 
         private void Update()
         {
@@ -41,9 +41,9 @@ namespace Assets.Scripts.TrafficLights
         {
             bool containsDirectionRequests = QueuedTraffic.Values.Any(v => v >= 0);
 
-            SimulatorMessageDataModel trafficUpdate = new SimulatorMessageDataModel
+            SimulatorTrafficUpdateContainerDataModel trafficUpdate = new SimulatorTrafficUpdateContainerDataModel
             {
-                TrafficUpdate = new SimulatorMessageDataModel.TrafficUpdateDataModel
+                TrafficUpdate = new SimulatorTrafficUpdateContainerDataModel.TrafficUpdateDataModel
                 {
                     LightId = Id,
                     Count = QueuedTraffic.Count

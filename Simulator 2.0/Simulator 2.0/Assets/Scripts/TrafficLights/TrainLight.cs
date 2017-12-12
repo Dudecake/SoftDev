@@ -9,6 +9,11 @@ namespace Assets.Scripts.TrafficLights
 
         public override void UpdateLightVisualization()
         {
+            if (TopLight == null || BottomLight == null)
+            {
+                return;
+            }
+
             TopLight.Color = BottomLight.Color = Color.black;
             switch (Status)
             {

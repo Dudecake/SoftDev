@@ -54,7 +54,12 @@ namespace Assets.Scripts
             }
         }
 
-        public void Send(SimulatorMessageDataModel message)
+        public void Send(SimulatorTrafficUpdateContainerDataModel message)
+        {
+            Send(JsonConvert.SerializeObject(message));
+        }
+
+        public void Send(SpeedViewModel message)
         {
             Send(JsonConvert.SerializeObject(message));
         }

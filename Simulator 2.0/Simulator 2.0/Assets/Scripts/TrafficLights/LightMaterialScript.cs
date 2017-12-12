@@ -6,7 +6,7 @@ namespace Assets.Scripts.TrafficLights
     {
         private MeshRenderer _myMeshRenderer;
 
-        public void Start()
+        private void Start()
         {
             _myMeshRenderer = transform.GetComponentInChildren<MeshRenderer>();
         }

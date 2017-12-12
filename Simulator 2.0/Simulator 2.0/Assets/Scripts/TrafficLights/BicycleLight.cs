@@ -65,7 +65,7 @@ namespace Assets.Scripts.TrafficLights
                     }
                     else
                     {
-                        _timerLights[i].Color = i < (_time * 1000 - (DateTime.Now.Ticks - _timeSetTime)) / 1000 ? Color.white : Color.black;
+                        _timerLights[i].Color = i < (_time * 1000 - (DateTime.Now.Ticks / 10000 - _timeSetTime / 10000)) / 1000 ? Color.white : Color.black;
                     }
                 }
             }

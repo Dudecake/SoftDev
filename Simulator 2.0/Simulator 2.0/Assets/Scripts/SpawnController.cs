@@ -25,7 +25,14 @@ namespace Assets.Scripts
         public int PedestrianSpawnWeight;
         public TrafficObject[] PedestrianPrefabs;
         //public int TrainSpawnWeight;
-        //public TrafficObject[] TrainPrefabs;
+        public TrafficObject TrainPrefab;
+
+        private const int FromEastTrainLaneId = 502;
+        private const int FromWestTrainLaneId = 501;
+        private float _lastFromEastTrainSpawn;
+        private float _lastFromWestTrainSpawn;
+        public float FromEastTrainSpawnIntervalSeconds = 60;
+        public float FromWestTrainSpawnIntervalSeconds = 90;
 
         private void Start()
         {
@@ -65,8 +72,10 @@ namespace Assets.Scripts
                 default:
                     throw new ArgumentOutOfRangeException();
             }
-        }
 
+            TrainSpawn();
+        }
+        
         private PrefabType RandomPrefabType()
         {
             Dictionary<PrefabType, int> weightedPrefabTypes = new Dictionary<PrefabType, int>
@@ -107,6 +116,40 @@ namespace Assets.Scripts
             trafficObject.PathIndex = Random.Range(0, lane.Paths.Length);
             trafficObject.transform.position = lane.Paths[trafficObject.PathIndex].PathPoints[0].Point;
             trafficObject.transform.LookAt(lane.Paths[trafficObject.PathIndex].PathPoints[1].Point);
+        }
+
+        private void TrainSpawn()
+        {
+            if (_lastFromEastTrainSpawn + FromEastTrainSpawnIntervalSeconds < Time.time)
+            {
+                _lastFromEastTrainSpawn = Time.time;
+                
+                Lane lane = _lanes.FirstOrDefault(l => l.LaneId == FromEastTrainLaneId);
+                if (lane != null)
+                {
+                    TrafficObject trafficObject = Instantiate(TrainPrefab);
+                    trafficObject.Lane = lane;
+                    trafficObject.PathIndex = Random.Range(0, lane.Paths.Length);
+                    trafficObject.transform.position = lane.Paths[trafficObject.PathIndex].PathPoints[0].Point;
+                    trafficObject.transform.LookAt(lane.Paths[trafficObject.PathIndex].PathPoints[1].Point);
+                    ((Train) trafficObject).IgnoreLight = true;
+                }
+
+            }
+            if (_lastFromWestTrainSpawn + FromWestTrainSpawnIntervalSeconds < Time.time)
+            {
+                _lastFromWestTrainSpawn = Time.time;
+
+                Lane lane = _lanes.FirstOrDefault(l => l.LaneId == FromWestTrainLaneId);
+                if (lane != null)
+                {
+                    TrafficObject trafficObject = Instantiate(TrainPrefab);
+                    trafficObject.Lane = lane;
+                    trafficObject.PathIndex = Random.Range(0, lane.Paths.Length);
+                    trafficObject.transform.position = lane.Paths[trafficObject.PathIndex].PathPoints[0].Point;
+                    trafficObject.transform.LookAt(lane.Paths[trafficObject.PathIndex].PathPoints[1].Point);
+                }
+            }
         }
 
         public enum PrefabType

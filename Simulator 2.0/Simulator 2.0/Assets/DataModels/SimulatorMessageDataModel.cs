@@ -1,6 +1,6 @@
 ﻿namespace Assets.DataModels
 {
-    public class SimulatorMessageDataModel
+    public class SimulatorTrafficUpdateContainerDataModel
     {
         public class TrafficUpdateDataModel
         {
@@ -10,5 +10,10 @@
         }
 
         public TrafficUpdateDataModel TrafficUpdate { get; set; }
+    }
+
+    public class SpeedViewModel
+    {
+        public float Speed { get; set; }
     }
 }

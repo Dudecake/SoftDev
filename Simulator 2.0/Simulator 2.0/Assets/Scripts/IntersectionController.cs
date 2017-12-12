@@ -24,10 +24,14 @@ namespace Assets.Scripts
         public bool Verbose;
         private const string SendQueue = "controller";
         private const string ReceiveQueue = "simulator";
-        
-        private void Start()
+
+        private void Awake()
         {
             Communicator = new Communicator(SendQueue, ReceiveQueue, HostName, VirtualHost, UserName, PassWord, Verbose);
+        }
+
+        private void Start()
+        {
             Communicator.AttachReceiver(OnMessageReceive);
 
             _trafficLights = GetComponentsInChildren<TrafficLight>();
