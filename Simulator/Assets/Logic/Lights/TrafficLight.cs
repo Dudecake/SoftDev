@@ -16,8 +16,8 @@ namespace Assets.Logic.Lights
 
         public int Id;
         private SpriteRenderer sr;
-
         public int Status { get; set; }
+        public int Time { get; set; } = -1;
 
         private void Start()
         {

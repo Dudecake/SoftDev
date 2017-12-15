@@ -530,7 +530,7 @@ PlayerSettings:
   metroCertificateNotAfter: 0000000000000000
   metroApplicationDescription: Simulator
   wsaImages: {}
-  metroTileShortName: 
+  metroTileShortName: Simulator
   metroCommandLineArgsFile: 
   metroTileShowName: 0
   metroMediumTileShowName: 0
