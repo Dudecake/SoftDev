@@ -138,6 +138,11 @@ public abstract class TrafficLight implements Comparable<TrafficLight>
 		}
 	}
 
+	static TrafficLight getHeaviestLight(TrafficLight aLight, TrafficLight bLight)
+	{
+		return aLight.queueLength > bLight.queueLength ? aLight : bLight;
+	}
+
 	private static final int DEBUGID = 101;
 	protected static final Logger LOGGER = LoggerFactory.getLogger(TrafficLight.class);
 	protected final int id;
@@ -169,29 +174,25 @@ public abstract class TrafficLight implements Comparable<TrafficLight>
 				if (status == Status.RED)
 				{
 					this.status = Status.ORANGE;
-					if (id == DEBUGID)
-						LOGGER.debug(String.format("Setting %d to %s", DEBUGID, this.status.toString()));
+					LOGGER.trace(String.format("Setting %d to %s", DEBUGID, this.status.toString()));
 				}
 				else
 				{
 					this.status = status;
-					if (id == DEBUGID)
-						LOGGER.debug(String.format("Setting %d to %s", DEBUGID, this.status.toString()));
+					LOGGER.trace(String.format("Setting %d to %s", DEBUGID, this.status.toString()));
 				}
 			}
 			else
 			{
 				this.status = status;
-				if (id == DEBUGID)
-					LOGGER.debug(String.format("Setting %d to %s", DEBUGID, this.status.toString()));
+				LOGGER.trace(String.format("Setting %d to %s", DEBUGID, this.status.toString()));
 			}
 			lastTime = Crossing.updateTime;
 			if (this.status == Status.ORANGE)
 				resetTime = lastTime.plus(orangeTime);
 			else
 				resetTime = lastTime.plus(cycleTime);
-			if (id == DEBUGID)
-				LOGGER.debug(String.format("Setting %d resetTime on %s (current time %s)", DEBUGID, resetTime.toString(), Time.getTime().toString()));
+			LOGGER.trace(String.format("Setting %d resetTime on %s (current time %s)", DEBUGID, resetTime.toString(), Time.getTime().toString()));
 		}
 		return this.status;
 	}
@@ -248,8 +249,8 @@ public abstract class TrafficLight implements Comparable<TrafficLight>
 		this.status = status;
 		this.time = -1;
 		lastTime = Duration.ZERO;
-		orangeTime = Duration.ofSeconds(5);
-		cycleTime = Duration.ofSeconds(10);
+		orangeTime = Duration.ofMillis(2500);
+		cycleTime = Duration.ofSeconds(5);
 		resetTime = Duration.ofSeconds(1);
 		interferingLights = new TrafficLightList();
 	}

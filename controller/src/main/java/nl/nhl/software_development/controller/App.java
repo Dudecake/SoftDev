@@ -137,6 +137,7 @@ public class App implements Runnable
 						double timescale = trafficUpdate.getTimescale();
 						if (timescale >= 0)
 							Time.setTimeScale(timescale);
+						LOGGER.debug(gson.toJson(Time.getTimeScaleAck(), TimeAck.class));
 						channel.basicPublish("", SIMULATOR_QUEUE_NAME, new Builder().correlationId(lastCorrelationId).build(),
 								gson.toJson(Time.getTimeScaleAck(), TimeAck.class).getBytes(CHARSET));
 					}
@@ -145,6 +146,10 @@ public class App implements Runnable
 				{
 					LOGGER.error("Message is not a TrafficUpdate");
 					LOGGER.debug("Got: ".concat(new String(body, CHARSET)));
+				}
+				catch (Exception ex)
+				{
+					LOGGER.error("Encountered error:", ex);
 				}
 				channel.basicAck(envelope.getDeliveryTag(), false);
 			}
@@ -181,6 +186,7 @@ public class App implements Runnable
 					LOGGER.error("Failed to do stuff", ex);
 				}
 				lastUpdate = crossingUpdate;
+				Time.watchDog();
 			}
 		}
 		catch (Exception ex)
@@ -198,9 +204,8 @@ public class App implements Runnable
 		options.addOption(Option.builder("p").longOpt("password").hasArg().argName("password").desc("Password to use when connecting to server").build());
 		options.addOption(Option.builder("?").longOpt("help").desc("Print help message").build());
 
-		// ch.qos.logback.classic.Logger root =
-		// (ch.qos.logback.classic.Logger)org.slf4j.LoggerFactory.getLogger(ch.qos.logback.classic.Logger.ROOT_LOGGER_NAME);
-		// root.setLevel(ch.qos.logback.classic.Level.TRACE);
+		ch.qos.logback.classic.Logger root = (ch.qos.logback.classic.Logger)LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
+		root.setLevel(ch.qos.logback.classic.Level.TRACE);
 
 		CommandLineParser parser = new DefaultParser();
 		executor = Executors.newSingleThreadScheduledExecutor();
@@ -229,7 +234,7 @@ public class App implements Runnable
 				}
 				LOGGER.info("Message received, starting logicloop");
 			}
-			executor.scheduleAtFixedRate(p, 0, 500, TimeUnit.MILLISECONDS);
+			executor.scheduleAtFixedRate(p, 0, 2500, TimeUnit.MILLISECONDS);
 		}
 		catch (ParseException ex)
 		{
