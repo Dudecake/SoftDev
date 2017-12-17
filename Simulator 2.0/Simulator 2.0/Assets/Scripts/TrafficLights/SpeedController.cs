@@ -30,7 +30,7 @@ namespace Assets.Scripts.TrafficLights
             if (Mathf.Abs(Time.timeScale - _speed) > 0)
             {
                 Time.timeScale = _speed;
-                Time.fixedDeltaTime = _speed;
+                //Time.fixedDeltaTime = _speed;
                 _slider.value = _speed;
                 SpeedSettingText.text = $"Speed: {_speed}x";
                 _slider.interactable = true;

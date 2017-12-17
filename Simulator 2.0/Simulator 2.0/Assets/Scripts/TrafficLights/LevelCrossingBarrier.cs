@@ -13,11 +13,23 @@ namespace Assets.Scripts.TrafficLights
         private readonly Color _toggleColor1 = Color.black;
         private readonly Color _toggleColor2 = Color.red;
 
-        public float BarrierMovementSpeed = 0.5f;
+        public float BarrierAnimationDurationSeconds = 10.0f;
         public Vector3 OpenRotation;
         public Vector3 ClosedRotation;
 
-        public bool Down { get; set; } = true;
+        public bool Down
+        {
+            get { return _down; }
+            set
+            {
+                if (value != _down)
+                    _downSetTimeSeconds = Time.time;
+                _down = value;
+            }
+        }
+
+        private float _downSetTimeSeconds;
+        private bool _down = true;
 
         private void Start()
         {
@@ -26,9 +38,15 @@ namespace Assets.Scripts.TrafficLights
 
         private void Update()
         {
-            transform.eulerAngles = Vector3.MoveTowards(transform.eulerAngles, Down ? ClosedRotation : OpenRotation,
-                Time.deltaTime * 5);
+            //transform.eulerAngles = Vector3.MoveTowards(transform.eulerAngles, Down ? ClosedRotation : OpenRotation, Time.deltaTime * 5);
 
+            if (_downSetTimeSeconds != 0)
+            {
+                float step = (Time.time - _downSetTimeSeconds) / BarrierAnimationDurationSeconds;
+                transform.eulerAngles = Vector3.Lerp(Down ? OpenRotation : ClosedRotation,
+                    Down ? ClosedRotation : OpenRotation, step);
+            }
+            
             if (transform.eulerAngles != OpenRotation)
             {
                 // ReSharper disable once CompareOfFloatsByEqualityOperator

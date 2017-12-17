@@ -15,11 +15,12 @@ namespace Assets.Scripts.TrafficLights
             base.Status = 2;
         }
 
+        //Overriding Status to create a delay on the status when the LevelCrossing barrier goes open
         public override int Status
         {
             get
             {
-                if (DateTime.Now.Ticks > _statusSetTimeTicks + StatusChangeDelaySec * TimeSpan.TicksPerSecond)
+                if (base.Status == 0 || DateTime.Now.Ticks > _statusSetTimeTicks + StatusChangeDelaySec * TimeSpan.TicksPerSecond)
                 {
                     return base.Status;
                 }

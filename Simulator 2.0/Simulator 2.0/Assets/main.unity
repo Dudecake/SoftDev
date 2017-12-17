@@ -266,7 +266,7 @@ MonoBehaviour:
   - {fileID: 313449699}
   - {fileID: 1524618932}
   - {fileID: 1787967328}
-  StatusChangeDelaySec: 3
+  StatusChangeDelaySec: 10
 --- !u!1001 &80885354
 Prefab:
   m_ObjectHideFlags: 0
@@ -840,7 +840,7 @@ Prefab:
     - target: {fileID: 114187750555836970, guid: 8b029b27094d810489ee48e4361ca617,
         type: 2}
       propertyPath: PathPoints.Array.size
-      value: 3
+      value: 4
       objectReference: {fileID: 0}
     - target: {fileID: 4962090726385102, guid: 8b029b27094d810489ee48e4361ca617, type: 2}
       propertyPath: m_LocalPosition.x
@@ -886,7 +886,7 @@ Prefab:
     - target: {fileID: 114187750555836970, guid: 8b029b27094d810489ee48e4361ca617,
         type: 2}
       propertyPath: PathPoints.Array.data[2].Point.x
-      value: 24.583145
+      value: 15.0215
       objectReference: {fileID: 0}
     - target: {fileID: 114187750555836970, guid: 8b029b27094d810489ee48e4361ca617,
         type: 2}
@@ -896,12 +896,12 @@ Prefab:
     - target: {fileID: 114187750555836970, guid: 8b029b27094d810489ee48e4361ca617,
         type: 2}
       propertyPath: PathPoints.Array.data[3].Point.x
-      value: -3.366788
+      value: 24.583145
       objectReference: {fileID: 0}
     - target: {fileID: 114187750555836970, guid: 8b029b27094d810489ee48e4361ca617,
         type: 2}
       propertyPath: PathPoints.Array.data[3].Point.z
-      value: 25.16372
+      value: -5.1124153
       objectReference: {fileID: 0}
     - target: {fileID: 114187750555836970, guid: 8b029b27094d810489ee48e4361ca617,
         type: 2}
@@ -921,7 +921,7 @@ Prefab:
     - target: {fileID: 114187750555836970, guid: 8b029b27094d810489ee48e4361ca617,
         type: 2}
       propertyPath: PathPoints.Array.data[1].Point.x
-      value: -16.6362
+      value: -19.11254
       objectReference: {fileID: 0}
     - target: {fileID: 114187750555836970, guid: 8b029b27094d810489ee48e4361ca617,
         type: 2}
@@ -1563,7 +1563,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ToggleSpeedSeconds: 0.5
-  BarrierMovementSpeed: 0.5
+  BarrierAnimationDurationSeconds: 10
   OpenRotation: {x: 0, y: 180, z: 0}
   ClosedRotation: {x: 0, y: 180, z: 90}
 --- !u!114 &272769932 stripped
@@ -1669,7 +1669,7 @@ Prefab:
     - target: {fileID: 114187750555836970, guid: 8b029b27094d810489ee48e4361ca617,
         type: 2}
       propertyPath: PathPoints.Array.data[1].Point.x
-      value: -6.0182824
+      value: -5.788985
       objectReference: {fileID: 0}
     - target: {fileID: 114187750555836970, guid: 8b029b27094d810489ee48e4361ca617,
         type: 2}
@@ -1872,7 +1872,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ToggleSpeedSeconds: 0.5
-  BarrierMovementSpeed: 0.5
+  BarrierAnimationDurationSeconds: 10
   OpenRotation: {x: 0, y: 180, z: 0}
   ClosedRotation: {x: 0, y: 180, z: 90}
 --- !u!114 &327585614 stripped
@@ -2237,7 +2237,7 @@ RectTransform:
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 477670543}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 555, y: 259.5, z: 0}
+  m_LocalPosition: {x: 650, y: 354, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 1068998153}
@@ -2724,7 +2724,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ToggleSpeedSeconds: 0.5
-  BarrierMovementSpeed: 0.5
+  BarrierAnimationDurationSeconds: 10
   OpenRotation: {x: 0, y: 0, z: 0}
   ClosedRotation: {x: 0, y: 0, z: 90}
 --- !u!1001 &567475169
@@ -3156,28 +3156,28 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a7496206b453acd479fa619d6dc1fdd9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  SpawnStartDelay: 1
+  SpawnStartDelay: 2
   SpawnInterval: 2
-  CarSpawnWeight: 25
+  CarSpawnWeight: 5
+  BusSpawnWeight: 2
+  BicycleSpawnWeight: 10
+  PedestrianSpawnWeight: 10
+  FromEastTrainSpawnInterval: 600
+  FromWestTrainSpawnInterval: 400
   CarPrefabs:
   - {fileID: 114276058696164220, guid: 6adbcff840dff9248b40e1bfa1b6238a, type: 2}
   - {fileID: 114192874965207504, guid: c3e0b3f819c60a14d89d951bc4abcd4e, type: 2}
   - {fileID: 114089750528878408, guid: 0eec6265a3eefc84792db00def085fc5, type: 2}
   - {fileID: 114826692530690690, guid: b555fdf9f600b144c81b634158c8ba0c, type: 2}
-  BusSpawnWeight: 2
   BusPrefabs:
   - {fileID: 114866564447026066, guid: 5e973763e1aaebb49bf5839f650b379b, type: 2}
   - {fileID: 114354132876957688, guid: 34941e62fdb557544ada8af1b5333ae0, type: 2}
-  BicycleSpawnWeight: 8
   BicyclePrefabs:
   - {fileID: 114405470792423802, guid: acf2d1bd10095c940863ae85632b2281, type: 2}
-  PedestrianSpawnWeight: 8
   PedestrianPrefabs:
   - {fileID: 114591121050750844, guid: ae99811abcadcab4a92f95cbf1c6fdb5, type: 2}
   TrainPrefab: {fileID: 114827158858825124, guid: 134e2f92640538a458d7f742f7469df2,
     type: 2}
-  FromEastTrainSpawnIntervalSeconds: 150
-  FromWestTrainSpawnIntervalSeconds: 400
 --- !u!1001 &837640532
 Prefab:
   m_ObjectHideFlags: 0
@@ -4053,7 +4053,7 @@ BoxCollider:
   m_GameObject: {fileID: 1060246343}
   m_Material: {fileID: 0}
   m_IsTrigger: 0
-  m_Enabled: 1
+  m_Enabled: 0
   serializedVersion: 2
   m_Size: {x: 50, y: 50.00001, z: 0.20000005}
   m_Center: {x: 0, y: 0, z: 0.1}
@@ -4139,7 +4139,7 @@ RectTransform:
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 1068998149}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 705, y: 319.5, z: 0}
+  m_LocalPosition: {x: 800, y: 414, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 1274758414}
@@ -4526,7 +4526,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ToggleSpeedSeconds: 0.5
-  BarrierMovementSpeed: 0.5
+  BarrierAnimationDurationSeconds: 10
   OpenRotation: {x: 0, y: 180, z: 0}
   ClosedRotation: {x: 0, y: 180, z: 90}
 --- !u!1 &1170388687
@@ -4817,6 +4817,7 @@ GameObject:
   - component: {fileID: 1269048385}
   - component: {fileID: 1269048384}
   - component: {fileID: 1269048383}
+  - component: {fileID: 1269048387}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -4846,8 +4847,8 @@ Camera:
   m_GameObject: {fileID: 1269048382}
   m_Enabled: 1
   serializedVersion: 2
-  m_ClearFlags: 1
-  m_BackGroundColor: {r: 0.19215687, g: 0.3019608, b: 0.4745098, a: 0}
+  m_ClearFlags: 2
+  m_BackGroundColor: {r: 0, g: 0, b: 0, a: 0}
   m_NormalizedViewPortRect:
     serializedVersion: 2
     x: 0
@@ -4886,6 +4887,19 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 40, y: -55, z: 0}
+--- !u!114 &1269048387
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 1269048382}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6a185946356a0374694c276e5ec8e9d3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  RotateSpeed: 0.2
+  Radius: 12
 --- !u!1 &1274758413
 GameObject:
   m_ObjectHideFlags: 0
@@ -4910,7 +4924,7 @@ RectTransform:
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 1274758413}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 555, y: 279.5, z: 0}
+  m_LocalPosition: {x: 650, y: 374, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 192603047}
@@ -5562,7 +5576,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ToggleSpeedSeconds: 0.5
-  BarrierMovementSpeed: 0.5
+  BarrierAnimationDurationSeconds: 10
   OpenRotation: {x: 0, y: 0, z: 0}
   ClosedRotation: {x: 0, y: 0, z: 90}
 --- !u!114 &1537370685 stripped
@@ -6719,7 +6733,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ToggleSpeedSeconds: 0.5
-  BarrierMovementSpeed: 0.5
+  BarrierAnimationDurationSeconds: 10
   OpenRotation: {x: 0, y: 0, z: 0}
   ClosedRotation: {x: 0, y: 0, z: 90}
 --- !u!114 &1792839643 stripped
@@ -6967,7 +6981,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ToggleSpeedSeconds: 0.5
-  BarrierMovementSpeed: 0.5
+  BarrierAnimationDurationSeconds: 10
   OpenRotation: {x: 0, y: 0, z: 0}
   ClosedRotation: {x: 0, y: 0, z: 90}
 --- !u!1001 &1947870715
@@ -7749,7 +7763,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ToggleSpeedSeconds: 0.5
-  BarrierMovementSpeed: 0.5
+  BarrierAnimationDurationSeconds: 10
   OpenRotation: {x: 0, y: 180, z: 0}
   ClosedRotation: {x: 0, y: 180, z: 90}
 --- !u!1001 &2138217619
@@ -7761,7 +7775,7 @@ Prefab:
     m_Modifications:
     - target: {fileID: 4141409003060172, guid: 9b53639ae3e4de6489230476cc1f078f, type: 2}
       propertyPath: m_LocalPosition.x
-      value: -11.392
+      value: -13.04
       objectReference: {fileID: 0}
     - target: {fileID: 4141409003060172, guid: 9b53639ae3e4de6489230476cc1f078f, type: 2}
       propertyPath: m_LocalPosition.y

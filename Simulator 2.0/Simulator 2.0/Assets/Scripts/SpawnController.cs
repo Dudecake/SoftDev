@@ -12,27 +12,27 @@ namespace Assets.Scripts
     {
         private Lane[] _lanes;
 
-        public float SpawnStartDelay;
-        public float SpawnInterval;
+        [Range(0.1f, 10)] public float SpawnStartDelay;
+        [Range(0.2f, 10)] public float SpawnInterval;
         private float _lastSpawn;
-
-        public int CarSpawnWeight;
+        
+        [Range(0, 100)] public int CarSpawnWeight;
+        [Range(0, 100)] public int BusSpawnWeight;
+        [Range(0, 100)] public int BicycleSpawnWeight;
+        [Range(0, 100)] public int PedestrianSpawnWeight;
+        [Range(10, 1200)] public int FromEastTrainSpawnInterval = 60;
+        [Range(10, 1200)] public int FromWestTrainSpawnInterval = 90;
         public TrafficObject[] CarPrefabs;
-        public int BusSpawnWeight;
         public TrafficObject[] BusPrefabs;
-        public int BicycleSpawnWeight;
         public TrafficObject[] BicyclePrefabs;
-        public int PedestrianSpawnWeight;
         public TrafficObject[] PedestrianPrefabs;
-        //public int TrainSpawnWeight;
         public TrafficObject TrainPrefab;
 
         private const int FromEastTrainLaneId = 502;
         private const int FromWestTrainLaneId = 501;
         private float _lastFromEastTrainSpawn;
         private float _lastFromWestTrainSpawn;
-        public float FromEastTrainSpawnIntervalSeconds = 60;
-        public float FromWestTrainSpawnIntervalSeconds = 90;
+        
 
         private void Start()
         {
@@ -46,6 +46,8 @@ namespace Assets.Scripts
                 RandomSpawn();
                 _lastSpawn = Time.time;
             }
+
+            TrainSpawn();
         }
 
         private void RandomSpawn()
@@ -66,14 +68,9 @@ namespace Assets.Scripts
                 case PrefabType.Pedestrian:
                     Spawn(PedestrianPrefabs, 400);
                     break;
-                //case PrefabType.Train:
-                //    Spawn(TrainPrefabs, 500);
-                //    break;
                 default:
                     throw new ArgumentOutOfRangeException();
             }
-
-            TrainSpawn();
         }
         
         private PrefabType RandomPrefabType()
@@ -83,8 +80,7 @@ namespace Assets.Scripts
                 {PrefabType.Car, CarSpawnWeight},
                 {PrefabType.Bus, BusSpawnWeight},
                 {PrefabType.Bicycle, BicycleSpawnWeight},
-                {PrefabType.Pedestrian, PedestrianSpawnWeight},
-                //{PrefabType.Train, TrainSpawnWeight }
+                {PrefabType.Pedestrian, PedestrianSpawnWeight}
             };
 
             int totalWeight = weightedPrefabTypes.Values.Sum();
@@ -120,7 +116,7 @@ namespace Assets.Scripts
 
         private void TrainSpawn()
         {
-            if (_lastFromEastTrainSpawn + FromEastTrainSpawnIntervalSeconds < Time.time)
+            if (_lastFromEastTrainSpawn + FromEastTrainSpawnInterval < Time.time)
             {
                 _lastFromEastTrainSpawn = Time.time;
                 
@@ -133,10 +129,12 @@ namespace Assets.Scripts
                     trafficObject.transform.position = lane.Paths[trafficObject.PathIndex].PathPoints[0].Point;
                     trafficObject.transform.LookAt(lane.Paths[trafficObject.PathIndex].PathPoints[1].Point);
                     ((Train) trafficObject).IgnoreLight = true;
+                    ((Train) trafficObject).PassedCrossingPathPoint = 3;
                 }
 
             }
-            if (_lastFromWestTrainSpawn + FromWestTrainSpawnIntervalSeconds < Time.time)
+
+            if (_lastFromWestTrainSpawn + FromWestTrainSpawnInterval < Time.time)
             {
                 _lastFromWestTrainSpawn = Time.time;
 
@@ -148,6 +146,7 @@ namespace Assets.Scripts
                     trafficObject.PathIndex = Random.Range(0, lane.Paths.Length);
                     trafficObject.transform.position = lane.Paths[trafficObject.PathIndex].PathPoints[0].Point;
                     trafficObject.transform.LookAt(lane.Paths[trafficObject.PathIndex].PathPoints[1].Point);
+                    ((Train)trafficObject).PassedCrossingPathPoint = 3;
                 }
             }
         }
@@ -157,8 +156,7 @@ namespace Assets.Scripts
             Car,
             Bus,
             Bicycle,
-            Pedestrian,
-            //Train
+            Pedestrian
         }
     }
 }

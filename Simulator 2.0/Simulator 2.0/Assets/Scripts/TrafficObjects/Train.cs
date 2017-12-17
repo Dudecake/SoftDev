@@ -1,20 +1,49 @@
-﻿using UnityEngine;
+﻿using Assets.Scripts.TrafficLights;
+using UnityEngine;
 
 namespace Assets.Scripts.TrafficObjects
 {
     public class Train : TrafficObject
     {
-        //private void Update()
-        //{
-        //    if (TargetIsLight)
-        //    {
-        //        Target.TrafficLight.AddTraffic(this);
-        //    }
-        //    else
-        //    {
-        //        Target.TrafficLight.RemoveTraffic(this);
-        //    }
-        //}
+        //Index of the PathPoint goal for when the train should signal its TrafficLight (501 or 502) that it's no longer queued there
+        public int PassedCrossingPathPoint { get; set; } = -1;
+
+        private TrafficLight _parentLight;
+
+        private void Start()
+        {
+            if (PassedCrossingPathPoint == -1)
+            {
+                Debug.LogError("Dont forget to set the PassedCrossingPathPoint on Trains");
+                UnityEditor.EditorApplication.isPlaying = false;
+            }
+        }
+
+        private void Update()
+        {
+            if (TargetIsLight)
+            {
+                Target.TrafficLight.AddTraffic(this);
+                _parentLight = Target.TrafficLight;
+            }
+            else
+            {
+                if (_parentLight != null)
+                {
+                    if (PassedCrossingPathPoint == -1) // Fallback for when the PassedCrossingPathPoint is not set
+                    {
+                        _parentLight.RemoveTraffic(this);
+                    }
+                    else
+                    {
+                        if (PathPointIndex == PassedCrossingPathPoint)
+                        {
+                            _parentLight.RemoveTraffic(this);
+                        }
+                    }
+                }
+            }
+        }
 
         public bool IgnoreLight { get; set; } = false;
 
@@ -38,8 +67,12 @@ namespace Assets.Scripts.TrafficObjects
             return false; // Train shouldnt check for obstacles
         }
 
-        protected override void RemoveTraffic() { }
+        protected override void RemoveTraffic()
+        {
+        }
 
-        protected override void AddTraffic() { }
+        protected override void AddTraffic()
+        {
+        }
     }
 }

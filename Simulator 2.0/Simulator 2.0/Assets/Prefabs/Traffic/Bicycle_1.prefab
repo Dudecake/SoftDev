@@ -385,7 +385,7 @@ BoxCollider:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1736597646806236}
   m_Material: {fileID: 0}
-  m_IsTrigger: 0
+  m_IsTrigger: 1
   m_Enabled: 1
   serializedVersion: 2
   m_Size: {x: 0.07, y: 0.25691915, z: 0.39799446}
@@ -419,6 +419,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Speed: 2
+  MaxPathPointShift: 0.15
+  BloodSplatterPrefab: {fileID: 114601106265347708, guid: a64b2db3368ea754abc63c6ec4d4b2c2,
+    type: 2}
 --- !u!137 &137158839000372318
 SkinnedMeshRenderer:
   m_ObjectHideFlags: 1

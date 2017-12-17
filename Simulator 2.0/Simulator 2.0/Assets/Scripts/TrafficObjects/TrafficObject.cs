@@ -13,7 +13,7 @@ namespace Assets.Scripts.TrafficObjects
 
         [Range(0.5f, 5f)] public float Speed;
 
-        private void Start()
+        private void Awake()
         {
             Rb = GetComponent<Rigidbody>();
         }
@@ -27,7 +27,7 @@ namespace Assets.Scripts.TrafficObjects
             }
             if (TargetIsLight && CloseToTarget && LightIsGreen())
             {
-                Target.TrafficLight.RemoveTraffic(this);
+                RemoveTraffic();
                 PathPointIndex++;
             }
             if (!TargetIsLight && CloseToTarget)
@@ -45,7 +45,7 @@ namespace Assets.Scripts.TrafficObjects
         protected PathPoint Target => Lane.Paths[PathIndex].PathPoints[PathPointIndex];
         protected bool TargetIsLight => Target.TrafficLight != null;
         protected bool TargetIsLast => PathPointIndex >= Lane.Paths[PathIndex].PathPoints.Length - 1;
-        protected bool CloseToTarget => Vector3.Distance(transform.position, Target.Point) < 0.1f;
+        protected bool CloseToTarget => Vector3.Distance(transform.position, ShiftedTarget(Target.Point)) < 0.1f;
 
         protected abstract void Move();
         protected abstract bool LightIsGreen();
@@ -59,6 +59,10 @@ namespace Assets.Scripts.TrafficObjects
         {
             Target.TrafficLight.AddTraffic(this);
         }
-        
+
+        protected virtual Vector3 ShiftedTarget(Vector3 target)
+        {
+            return target;
+        }
     }
 }
