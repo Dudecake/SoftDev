@@ -8,6 +8,7 @@ public class Time
 {
 	private static double timeScale = 1.0;
 	private static Duration time = Duration.ofSeconds(15);
+	private static Duration resetTime = Duration.ofMinutes(1);
 	private static LocalDateTime lastUpdate = LocalDateTime.now();
 
 	public static double getTimeScale()
@@ -28,6 +29,16 @@ public class Time
 	public static Duration getTime()
 	{
 		return time;
+	}
+
+	public static boolean needsFullReset()
+	{
+		return resetTime.compareTo(time) < 0;
+	}
+
+	static void watchDog()
+	{
+		resetTime = time.plus(Duration.ofMinutes(1));
 	}
 
 	private Time()

@@ -20,14 +20,18 @@ public class BikeTrafficLight extends TrafficLight
 	@Override
 	Status setStatus(Status status)
 	{
-		Status res = super.setStatus(status);
-		if (pairedLight != null)
+		Status res = this.status;
+		if (status != Status.GREEN && queueLength != 0)
 		{
-			pairedLight.status = res;
-			if (res == Status.GREEN)
+			res = super.setStatus(status);
+			if (pairedLight != null)
 			{
-				lastTime = Crossing.updateTime;
-				resetTime = lastTime.plus(cycleTime);
+				pairedLight.status = res;
+				if (res == Status.GREEN)
+				{
+					// lastTime = Crossing.updateTime;
+					// resetTime = lastTime.plus(cycleTime);
+				}
 			}
 		}
 		return res;
@@ -57,7 +61,9 @@ public class BikeTrafficLight extends TrafficLight
 	@Override
 	TrafficLightUpdate serialize()
 	{
-		return new TrafficLightUpdate(id, State.valueOf(status), time);
+		TrafficLightUpdate res = new TrafficLightUpdate(id, State.valueOf(status), time);
+		// if (id == )
+		return res;
 	}
 
 	@Override

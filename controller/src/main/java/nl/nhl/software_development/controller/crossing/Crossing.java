@@ -155,24 +155,38 @@ public class Crossing
 			// {
 			// System.out.println("Weight is 0");
 			// }
+			if (Time.needsFullReset())
+				lights.watchDogReset();
+			int trainFree = 0;
 			for (TrainTrafficLight light : trainLights)
 			{
-				if (light.getStatus() != Status.GREEN)
+				if (light.getQueueLength() != 0)
 				{
-					for (int i = 0; i < workLights.size();)
+					LOGGER.debug(String.format("Train arrived at: %d", light.getId()));
+					if (light.getStatus() != Status.GREEN)
 					{
-						if (workLights.get(i).interferesWith(light))
+						for (int i = 0; i < workLights.size();)
 						{
-							workLights.get(i).setStatus(Status.RED);
-							workLights.remove(i);
-						}
-						else
-						{
-							i++;
+							if (workLights.get(i).interferesWith(light))
+							{
+								workLights.get(i).setStatus(Status.RED);
+								LOGGER.debug(String.format("Removed id %d from workLights: queue length of %d", workLights.get(i).getId(),
+										workLights.get(i).getQueueLength()));
+								workLights.remove(i);
+								trainFree++;
+							}
+							else
+							{
+								i++;
+							}
 						}
 					}
 				}
+				workLights.remove(light);
 			}
+			LOGGER.debug(String.format("workLights contains %d lights", workLights.size()));
+			if (trainFree == 0)
+				lights.getId(601).setStatus(Status.GREEN);
 			TrafficLight workLight = workLights.get(0);
 			// if (workLight.getWeight() == Short.MAX_VALUE && workLight.getStatus() != Status.GREEN)
 			// {
@@ -191,7 +205,7 @@ public class Crossing
 			// }
 			TrafficLightList greenLights = new TrafficLightList();
 			TrafficLightList interferingLights = new TrafficLightList();
-			lightTrimLoop: for (int i = 1; i < workLights.size(); i++)
+			lightTrimLoop: for (int i = 0; i < workLights.size(); i++)
 			{
 				workLight = workLights.get(i);
 				for (TrafficLight t : greenLights)
@@ -199,6 +213,10 @@ public class Crossing
 					if (workLight.interferesWith(t))
 					{
 						interferingLights.add(t);
+						workLights.remove(i);
+						i--;
+						LOGGER.debug(String.format("Added id %d to interferinglights: queue length of %d vs %d", t.getId(), t.getQueueLength(),
+								workLight.getQueueLength()));
 						// if (workLight.compareTo(t) < 0)
 						// {
 						//
@@ -212,24 +230,39 @@ public class Crossing
 					{
 						if (workLight.setStatus(Status.RED) == Status.RED)
 						{
+							LOGGER.debug(
+									String.format("Removed id %d from workLights: queue length of %d", workLights.get(i).getId(), workLight.getQueueLength()));
 							workLights.remove(i);
 							i--;
 							continue;
 						}
+						else
+						{
+							LOGGER.trace(String.format("Tried setting %d to red", workLight.getId()));
+						}
 					}
+					LOGGER.debug(String.format("Added id %d to greenLights: queue length of %d", workLight.getId(), workLight.getQueueLength()));
 					greenLights.add(workLight);
 				}
 			}
 			if (greenLights.isEmpty())
 			{
+				LOGGER.trace("greenlights is empty");
 				for (int i = 0; i < workLights.size();)
 				{
 					workLight = workLights.get(i);
 					if (!workLight.interferesWith(greenLights))
 					{
-						workLight.setStatus(Status.GREEN);
-						greenLights.add(workLight);
-						workLights.remove(i);
+						if (workLight.setStatus(Status.GREEN) != Status.RED)
+						{
+							greenLights.add(workLight);
+							LOGGER.debug(String.format("Added id %d to greenLights: queue length of %d", workLight.getId(), workLight.getQueueLength()));
+							workLights.remove(i);
+						}
+						else
+						{
+							i++;
+						}
 					}
 					else
 					{
@@ -237,7 +270,7 @@ public class Crossing
 					}
 				}
 			}
-			if (lights.getId(104).getStatus() == Status.GREEN && lights.getId(107).getStatus() == Status.GREEN)
+			if (lights.getId(104).getStatus() == Status.GREEN && lights.getId(106).getStatus() == Status.GREEN)
 			{
 				LOGGER.error("Shit be whack yo");
 			}

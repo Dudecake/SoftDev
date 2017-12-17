@@ -121,16 +121,16 @@ public class App
 					for (int i = 0; i < 15; i++)
 					{
 						channel.basicPublish("", COMMANDQUEUE_NAME, properties,
-								gson.toJson(new TrafficUpdateWrapper(randomLightA, 1, null, 1.0), TrafficUpdateWrapper.class).getBytes(CHARSET));
+								gson.toJson(new TrafficUpdateWrapper(randomLightA, 1, null), TrafficUpdateWrapper.class).getBytes(CHARSET));
 						channel.basicPublish("", COMMANDQUEUE_NAME, properties,
-								gson.toJson(new TrafficUpdateWrapper(randomLightB, 2, null, 1.0), TrafficUpdateWrapper.class).getBytes(CHARSET));
+								gson.toJson(new TrafficUpdateWrapper(randomLightB, 2, null), TrafficUpdateWrapper.class).getBytes(CHARSET));
 						Thread.sleep(2500);
 						if (App.this.crossing.getLightById(randomLightA).getStatus() == Status.GREEN)
 							channel.basicPublish("", COMMANDQUEUE_NAME, properties,
-									gson.toJson(new TrafficUpdateWrapper(randomLightA, 0, null, 1.0), TrafficUpdateWrapper.class).getBytes(CHARSET));
+									gson.toJson(new TrafficUpdateWrapper(randomLightA, 0, null), TrafficUpdateWrapper.class).getBytes(CHARSET));
 						if (App.this.crossing.getLightById(randomLightB).getStatus() == Status.GREEN)
 							channel.basicPublish("", COMMANDQUEUE_NAME, properties,
-									gson.toJson(new TrafficUpdateWrapper(randomLightB, 0, null, 1.0), TrafficUpdateWrapper.class).getBytes(CHARSET));
+									gson.toJson(new TrafficUpdateWrapper(randomLightB, 0, null), TrafficUpdateWrapper.class).getBytes(CHARSET));
 						randomLightA = App.R.nextInt(10) + 101;
 						randomLightB = App.R.nextInt(10) + 101;
 					}
