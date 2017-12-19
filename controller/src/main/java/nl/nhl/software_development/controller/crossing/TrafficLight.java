@@ -16,7 +16,7 @@ public abstract class TrafficLight implements Comparable<TrafficLight>
 {
 	public enum Status
 	{
-		RED, ORANGE, GREEN;
+		RED, ORANGE, GREEN, LEFT, RIGHT, STRAIGHTLEFT, STRAIGHTRIGHT, LEFTRIGHT, ALL;
 		public Status inverse()
 		{
 			Status res = Status.ORANGE;
@@ -29,6 +29,10 @@ public abstract class TrafficLight implements Comparable<TrafficLight>
 				break;
 			case GREEN:
 				res = Status.RED;
+				break;
+			default:
+				res = Status.ALL;
+				break;
 			}
 			return res;
 		}
@@ -147,7 +151,7 @@ public abstract class TrafficLight implements Comparable<TrafficLight>
 	protected static final Logger LOGGER = LoggerFactory.getLogger(TrafficLight.class);
 	protected final int id;
 	protected Status status;
-	protected int time;
+	// protected int time;
 	protected Duration cycleTime;
 	protected Duration orangeTime;
 	protected Duration resetTime;
@@ -192,7 +196,8 @@ public abstract class TrafficLight implements Comparable<TrafficLight>
 				resetTime = lastTime.plus(orangeTime);
 			else
 				resetTime = lastTime.plus(cycleTime);
-			LOGGER.trace(String.format("Setting %d resetTime on %s (current time %s)", DEBUGID, resetTime.toString(), Time.getTime().toString()));
+			LOGGER.trace(String.format("Setting %d resetTime on %s (current time %s)", DEBUGID, resetTime.toString(),
+					Time.getTime().toString()));
 		}
 		return this.status;
 	}
@@ -247,7 +252,6 @@ public abstract class TrafficLight implements Comparable<TrafficLight>
 	{
 		this.id = id;
 		this.status = status;
-		this.time = -1;
 		lastTime = Duration.ZERO;
 		orangeTime = Duration.ofMillis(2500);
 		cycleTime = Duration.ofSeconds(5);
@@ -267,16 +271,7 @@ public abstract class TrafficLight implements Comparable<TrafficLight>
 
 	TrafficLightUpdate serialize()
 	{
-		int time = -1;
-		if (id == 301 || id == 302)
-		{
-			for (TrafficLight l : interferingLights)
-			{
-				if (time < l.resetTime.toMillis() / 1000)
-					time = (int)(l.resetTime.toMillis() / 1000);
-			}
-		}
-		return new TrafficLightUpdate(id, State.valueOf(status), time);
+		return new TrafficLightUpdate(id, State.valueOf(status), -1);
 	}
 
 	@Override

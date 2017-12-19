@@ -38,6 +38,7 @@ public class CarTrafficLight extends TrafficLight
 			{
 				for (Location otherDest : carTrafficLight.getDestinations())
 				{
+					// FIXME: Sometimes sets 106 and 105 to green
 					if (TrafficLight.crossesWith(origin, thisDest, carTrafficLight.getOrigin(), otherDest))
 					{
 						res = true;
@@ -54,7 +55,7 @@ public class CarTrafficLight extends TrafficLight
 		}
 		else if (BikeTrafficLight.class.isInstance(other))
 		{
-			if (IntStream.of(new int[] { 304, 404, 405 }).noneMatch(x -> x == id))
+			if (IntStream.of(new int[] { 304, 404, 405 }).noneMatch(x -> x == other.id))
 			{
 				BikeTrafficLight bikeTrafficLight = BikeTrafficLight.class.cast(other);
 				if (origin == bikeTrafficLight.getOrigin() || destinations.contains(bikeTrafficLight.getOrigin()))

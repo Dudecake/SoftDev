@@ -16,7 +16,7 @@ public class TrafficLightUpdate
 {
 	public enum State
 	{
-		RED(0), ORANGE(1), GREEN(2);
+		RED(0), ORANGE(1), GREEN(2), LEFT(3), RIGHT(4), STRAIGHTLEFT(5), STRAIGHTRIGHT(6), LEFTRIGHT(7), ALL(8);
 
 		private final int value;
 
@@ -40,6 +40,21 @@ public class TrafficLightUpdate
 				break;
 			case GREEN:
 				res = State.GREEN;
+			case RED:
+				break;
+			case LEFT:
+				res = State.LEFT;
+			case STRAIGHTLEFT:
+				res = State.STRAIGHTLEFT;
+				break;
+			case STRAIGHTRIGHT:
+				res = STRAIGHTRIGHT;
+				break;
+			case LEFTRIGHT:
+				res = LEFTRIGHT;
+				break;
+			case ALL:
+				res = State.ALL;
 			default:
 				break;
 			}
@@ -58,6 +73,21 @@ public class TrafficLightUpdate
 				break;
 			case 2:
 				res = State.GREEN;
+			case 3:
+				break;
+			case 4:
+				res = State.LEFT;
+			case 5:
+				res = State.STRAIGHTLEFT;
+				break;
+			case 6:
+				res = STRAIGHTRIGHT;
+				break;
+			case 7:
+				res = LEFTRIGHT;
+				break;
+			case 8:
+				res = State.ALL;
 			default:
 				break;
 			}
@@ -69,7 +99,8 @@ public class TrafficLightUpdate
 	{
 
 		@Override
-		public State deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException
+		public State deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context)
+				throws JsonParseException
 		{
 			return State.valueOf(json.getAsInt());
 		}
