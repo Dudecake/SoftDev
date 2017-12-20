@@ -57,7 +57,7 @@ public class Crossing
 				break;
 			case 106:
 				location = Location.SOUTH;
-				destinations = Arrays.asList(Location.EAST);
+				destinations = Arrays.asList(Location.EAST, Location.NORTH);
 				break;
 			case 107:
 				destinations = Arrays.asList(Location.WEST);
