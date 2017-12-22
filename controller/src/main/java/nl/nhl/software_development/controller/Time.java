@@ -4,6 +4,10 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 
+import org.slf4j.LoggerFactory;
+
+import nl.nhl.software_development.controller.crossing.Crossing;
+
 public class Time
 {
 	private static double timeScale = 1.0;
@@ -49,7 +53,9 @@ public class Time
 	static void updateTime()
 	{
 		LocalDateTime updateTime = LocalDateTime.now();
+		StringBuilder builder = new StringBuilder(String.format("Updated time from %s to ", time.toString()));
 		time = time.plus((long)(Duration.between(lastUpdate, updateTime).toMillis() * timeScale), ChronoUnit.MILLIS);
+		LoggerFactory.getLogger(Crossing.class).trace(builder.append(time.toString()).toString());
 		lastUpdate = updateTime;
 	}
 

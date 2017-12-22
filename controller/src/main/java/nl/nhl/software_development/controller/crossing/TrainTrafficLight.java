@@ -18,11 +18,13 @@ public class TrainTrafficLight extends TrafficLight
 	void setQueueLength(int queueLength)
 	{
 		connectedLight.setQueueLength(queueLength);
+		this.queueLength = queueLength;
 	}
 
 	@Override
 	Status setStatus(Status status)
 	{
+		this.status = status;
 		return status;
 	}
 

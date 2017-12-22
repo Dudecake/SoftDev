@@ -204,8 +204,8 @@ public class App implements Runnable
 		options.addOption(Option.builder("p").longOpt("password").hasArg().argName("password").desc("Password to use when connecting to server").build());
 		options.addOption(Option.builder("?").longOpt("help").desc("Print help message").build());
 
-		ch.qos.logback.classic.Logger root = (ch.qos.logback.classic.Logger)LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
-		root.setLevel(ch.qos.logback.classic.Level.TRACE);
+		// ch.qos.logback.classic.Logger root = (ch.qos.logback.classic.Logger)LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
+		// root.setLevel(ch.qos.logback.classic.Level.TRACE);
 
 		CommandLineParser parser = new DefaultParser();
 		executor = Executors.newSingleThreadScheduledExecutor();

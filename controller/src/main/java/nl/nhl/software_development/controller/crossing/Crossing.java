@@ -91,9 +91,10 @@ public class Crossing
 			lights.add(new BikeTrafficLight(i, Status.RED, location));
 		}
 		// Add pedestrian traffic lights
-		location = Location.WEST;
+
 		for (int i = 401; i < 413; i++)
 		{
+			location = Location.WEST;
 			switch (i)
 			{
 			case 402:
@@ -112,18 +113,6 @@ public class Crossing
 			}
 			lights.add(new BikeTrafficLight(i, Status.RED, location));
 		}
-		// Pair trafficlights
-		BikeTrafficLight.pairLights(BikeTrafficLight.class.cast(lights.getId(301)),
-				BikeTrafficLight.class.cast(lights.getId(305)));
-		BikeTrafficLight.pairLights(BikeTrafficLight.class.cast(lights.getId(302)),
-				BikeTrafficLight.class.cast(lights.getId(303)));
-		BikeTrafficLight.pairLights(BikeTrafficLight.class.cast(lights.getId(401)),
-				BikeTrafficLight.class.cast(lights.getId(406)));
-		BikeTrafficLight.pairLights(BikeTrafficLight.class.cast(lights.getId(402)),
-				BikeTrafficLight.class.cast(lights.getId(403)));
-		BikeTrafficLight.pairLights(BikeTrafficLight.class.cast(lights.getId(404)),
-				BikeTrafficLight.class.cast(lights.getId(405)));
-
 		// Add train traffic light
 		TrainCrossingLight trainLight = new TrainCrossingLight(601, Status.RED, Location.SOUTH);
 		lights.add(trainLight);
@@ -137,8 +126,7 @@ public class Crossing
 
 	public CrossingUpdate serialize()
 	{
-		return new CrossingUpdate(lights.parallelStream().map(TrafficLight::serialize).filter(l -> l != null)
-				.collect(Collectors.toList()), 1.0);
+		return new CrossingUpdate(lights.parallelStream().map(TrafficLight::serialize).filter(l -> l != null).collect(Collectors.toList()), 1.0);
 	}
 
 	public static void preUpdate()
@@ -167,6 +155,8 @@ public class Crossing
 			if (Time.needsFullReset())
 				lights.watchDogReset();
 			int trainFree = 0;
+			workLights.removeAll(trainLights);
+			workLights.remove(workLights.getId(601));
 			for (TrainTrafficLight light : trainLights)
 			{
 				if (light.getQueueLength() != 0)
@@ -179,10 +169,12 @@ public class Crossing
 							if (workLights.get(i).interferesWith(light))
 							{
 								workLights.get(i).setStatus(Status.RED);
-								LOGGER.trace(String.format("Removed id %d from workLights: queue length of %d",
-										workLights.get(i).getId(), workLights.get(i).getQueueLength()));
+								LOGGER.trace(String.format("Removed id %d from workLights (reason: train): queue length of %d", workLights.get(i).getId(),
+										workLights.get(i).getQueueLength()));
+								if (workLights.get(i).getStatus() != Status.GREEN)
+									trainFree++;
 								workLights.remove(i);
-								trainFree++;
+
 							}
 							else
 							{
@@ -191,11 +183,8 @@ public class Crossing
 						}
 					}
 				}
-				workLights.remove(light);
 			}
-			LOGGER.debug(String.format("workLights contains %d lights", workLights.size()));
-			if (trainFree == 0)
-				lights.getId(601).setStatus(Status.GREEN);
+
 			TrafficLight workLight = workLights.get(0);
 			// if (workLight.getWeight() == Short.MAX_VALUE &&
 			// workLight.getStatus() != Status.GREEN)
@@ -242,8 +231,8 @@ public class Crossing
 					{
 						if (workLight.setStatus(Status.RED) == Status.RED)
 						{
-							LOGGER.trace(String.format("Removed id %d from workLights: queue length of %d",
-									workLights.get(i).getId(), workLight.getQueueLength()));
+							LOGGER.trace(String.format("Removed id %d from workLights (reason: weight): queue length of %d", workLights.get(i).getId(),
+									workLight.getQueueLength()));
 							workLights.remove(i);
 							i--;
 							continue;
@@ -253,8 +242,7 @@ public class Crossing
 							LOGGER.trace(String.format("Tried setting %d to red", workLight.getId()));
 						}
 					}
-					LOGGER.debug(String.format("Added id %d to greenLights: queue length of %d", workLight.getId(),
-							workLight.getQueueLength()));
+					LOGGER.trace(String.format("Added id %d to greenLights: queue length of %d", workLight.getId(), workLight.getQueueLength()));
 					greenLights.add(workLight);
 				}
 			}
@@ -269,8 +257,7 @@ public class Crossing
 						if (workLight.setStatus(Status.GREEN) != Status.RED)
 						{
 							greenLights.add(workLight);
-							LOGGER.trace(String.format("Added id %d to greenLights: queue length of %d",
-									workLight.getId(), workLight.getQueueLength()));
+							LOGGER.trace(String.format("Added id %d to greenLights: queue length of %d", workLight.getId(), workLight.getQueueLength()));
 							workLights.remove(i);
 						}
 						else
@@ -284,9 +271,18 @@ public class Crossing
 					}
 				}
 			}
-			if (lights.getId(104).getStatus() == Status.GREEN && lights.getId(106).getStatus() == Status.GREEN)
+			LOGGER.debug(String.format("workLights contains %d lights", workLights.size()));
+			if (lights.getId(501).getQueueLength() == 0 && lights.getId(502).getQueueLength() == 0)
 			{
-				LOGGER.error("Shit be whack yo");
+				lights.getId(501).setStatus(Status.RED);
+				lights.getId(601).setStatus(Status.GREEN);
+			}
+			if (trainFree != 0)
+			{
+				LOGGER.debug("Train is free");
+				if (lights.getId(501).getQueueLength() != 0 && lights.getId(502).getQueueLength() == 0)
+					lights.getId(501).setStatus(Status.GREEN);
+				lights.getId(601).setStatus(Status.RED);
 			}
 			// TODO: Add logic
 		}

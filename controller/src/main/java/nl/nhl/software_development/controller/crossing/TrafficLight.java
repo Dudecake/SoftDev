@@ -58,16 +58,21 @@ public abstract class TrafficLight implements Comparable<TrafficLight>
 
 	static void fillInterferingLights(final TrafficLightList lights)
 	{
+		// StringBuilder builder = new StringBuilder();
 		for (TrafficLight t : lights)
 		{
+			// builder.append(String.format("Id %d interferes with: ", t.getId()));
 			for (TrafficLight o : lights)
 			{
 				if (!t.equals(o) && t.interferesWith(o) && !t.getinterferingLights().contains(o))
 				{
 					t.addInterferingLight(o);
 					o.addInterferingLight(t);
+					// builder.append(String.format("%d, ", o.getId()));
 				}
 			}
+			// LOGGER.debug(builder.toString());
+			// builder.delete(0, builder.length());
 		}
 	}
 
@@ -196,8 +201,7 @@ public abstract class TrafficLight implements Comparable<TrafficLight>
 				resetTime = lastTime.plus(orangeTime);
 			else
 				resetTime = lastTime.plus(cycleTime);
-			LOGGER.trace(String.format("Setting %d resetTime on %s (current time %s)", DEBUGID, resetTime.toString(),
-					Time.getTime().toString()));
+			LOGGER.trace(String.format("Setting %d resetTime on %s (current time %s)", DEBUGID, resetTime.toString(), Time.getTime().toString()));
 		}
 		return this.status;
 	}
@@ -297,7 +301,7 @@ public abstract class TrafficLight implements Comparable<TrafficLight>
 	protected static boolean crossesWith(Location originA, Location destA, Location originB, Location destB)
 	{
 		boolean res = false;
-		if (originA != originB && originA != destB)
+		if (originA != originB || originA != destB)
 		{
 			Line2D lineA = new Line2D.Float(originA.asOriginPoint2d(), destA.asDestPoint2d());
 			Line2D lineB = new Line2D.Float(originB.asOriginPoint2d(), destB.asDestPoint2d());

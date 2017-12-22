@@ -10,9 +10,7 @@ import nl.nhl.software_development.controller.net.TrafficLightUpdate.State;
 public class BikeTrafficLight extends TrafficLight
 {
 	private final Location origin;
-	private int time;
 	private List<BikeTrafficLight> pairedLights;
-	private BikeTrafficLight pairedLight;
 
 	Location getOrigin()
 	{
@@ -45,21 +43,7 @@ public class BikeTrafficLight extends TrafficLight
 		if (id < 300 || id > 500)
 			throw new IllegalArgumentException("id doesn't correspond with a bike or pedestrian traffic light");
 		this.origin = origin;
-		this.time = -1;
 		this.pairedLights = new ArrayList<>();
-		this.pairedLight = null;
-	}
-
-	public BikeTrafficLight(int id, Status status, Location origin, int time)
-	{
-		super(id, status);
-		if (id < 300 || id > 500)
-			throw new IllegalArgumentException("id doesn't correspond with a bike or pedestrian traffic light");
-		this.origin = origin;
-		this.time = -1;
-		this.time = time;
-		this.pairedLights = new ArrayList<>();
-		this.pairedLight = null;
 	}
 
 	@Override
@@ -126,11 +110,5 @@ public class BikeTrafficLight extends TrafficLight
 		{
 			pairedLights.add(l);
 		}
-	}
-
-	static void pairLights(BikeTrafficLight lightA, BikeTrafficLight lightB)
-	{
-		lightA.pairedLight = lightB;
-		lightB.pairedLight = lightA;
 	}
 }

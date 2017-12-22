@@ -22,7 +22,7 @@ public class TrainCrossingLight extends TrafficLight
 	@Override
 	Status setStatus(Status status)
 	{
-		return super.setStatus(status);
+		return this.status = status;
 	}
 
 	public TrainCrossingLight(int id, Status status, Location origin)

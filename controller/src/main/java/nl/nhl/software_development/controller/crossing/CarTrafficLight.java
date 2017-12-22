@@ -53,9 +53,15 @@ public class CarTrafficLight extends TrafficLight
 			if (origin == trainTrafficLight.getOrigin() || destinations.contains(trainTrafficLight.getOrigin()))
 				res = true;
 		}
+		else if (TrainTrafficLight.class.isInstance(other))
+		{
+			TrainTrafficLight trainTrafficLight = TrainTrafficLight.class.cast(other);
+			if (origin == trainTrafficLight.getOrigin() || destinations.contains(trainTrafficLight.getOrigin()))
+				res = true;
+		}
 		else if (BikeTrafficLight.class.isInstance(other))
 		{
-			if (IntStream.of(new int[] { 304, 404, 405 }).noneMatch(x -> x == other.id))
+			if (id != 106 || IntStream.of(new int[] { 304, 404, 405 }).noneMatch(x -> x == other.id))
 			{
 				BikeTrafficLight bikeTrafficLight = BikeTrafficLight.class.cast(other);
 				if (origin == bikeTrafficLight.getOrigin() || destinations.contains(bikeTrafficLight.getOrigin()))
@@ -66,18 +72,19 @@ public class CarTrafficLight extends TrafficLight
 		}
 		else if (BusTrafficLight.class.isInstance(other))
 		{
-			BusTrafficLight busTrafficLight = BusTrafficLight.class.cast(other);
-			locationLoop: for (Location thisDest : destinations)
-			{
-				for (Location otherDest : busTrafficLight.getDirectionRequests())
-				{
-					if (TrafficLight.crossesWith(origin, thisDest, busTrafficLight.getOrigin(), otherDest))
-					{
-						res = true;
-						break locationLoop;
-					}
-				}
-			}
+			// BusTrafficLight busTrafficLight = BusTrafficLight.class.cast(other);
+			// locationLoop: for (Location thisDest : destinations)
+			// {
+			// for (Location otherDest : busTrafficLight.getDestinations())
+			// {
+			// if (TrafficLight.crossesWith(origin, thisDest, busTrafficLight.getOrigin(), otherDest))
+			// {
+			// res = true;
+			// break locationLoop;
+			// }
+			// }
+			// }
+			res = other.interferesWith(this);
 		}
 		return res;
 	}

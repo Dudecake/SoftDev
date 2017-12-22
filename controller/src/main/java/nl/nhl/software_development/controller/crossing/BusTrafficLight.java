@@ -86,41 +86,50 @@ public class BusTrafficLight extends TrafficLight
 	@Override
 	boolean interferesWith(TrafficLight other)
 	{
-		boolean res = false;
-		if (TrainCrossingLight.class.isInstance(other))
+		// boolean res = false;
+		// if (TrainCrossingLight.class.isInstance(other))
+		// {
+		// TrainCrossingLight trainTrafficLight = TrainCrossingLight.class.cast(other);
+		// if (origin == trainTrafficLight.getOrigin() || directionRequests.contains(trainTrafficLight.getOrigin()))
+		// res = true;
+		// }
+		// else if (BikeTrafficLight.class.isInstance(other))
+		// {
+		// BikeTrafficLight bikeTrafficLight = BikeTrafficLight.class.cast(other);
+		// if (origin == bikeTrafficLight.getOrigin() || directionRequests.contains(bikeTrafficLight.getOrigin()))
+		// {
+		// res = true;
+		// }
+		// }
+		// else if (BusTrafficLight.class.isInstance(other))
+		// {
+		// res = false;
+		// }
+		// else if (CarTrafficLight.class.isInstance(other))
+		// {
+		// CarTrafficLight carTrafficLight = CarTrafficLight.class.cast(other);
+		// locationLoop: for (Location thisDest : directionRequests)
+		// {
+		// for (Location otherDest : carTrafficLight.getDestinations())
+		// {
+		// if (TrafficLight.crossesWith(origin, thisDest, carTrafficLight.getOrigin(), otherDest))
+		// {
+		// res = true;
+		// break locationLoop;
+		// }
+		// }
+		// }
+		// }
+		if (CarTrafficLight.class.isInstance(other))
 		{
-			TrainCrossingLight trainTrafficLight = TrainCrossingLight.class.cast(other);
-			if (origin == trainTrafficLight.getOrigin() || directionRequests.contains(trainTrafficLight.getOrigin()))
-				res = true;
-		}
-		else if (BikeTrafficLight.class.isInstance(other))
-		{
-			BikeTrafficLight bikeTrafficLight = BikeTrafficLight.class.cast(other);
-			if (origin == bikeTrafficLight.getOrigin() || directionRequests.contains(bikeTrafficLight.getOrigin()))
-			{
-				res = true;
-			}
+			CarTrafficLight light = CarTrafficLight.class.cast(other);
+			return (light.getOrigin() == Location.NORTH || light.getDestinations().contains(Location.NORTH) || light.getDestinations().contains(Location.WEST));
 		}
 		else if (BusTrafficLight.class.isInstance(other))
 		{
-			res = false;
+			return false;
 		}
-		else if (CarTrafficLight.class.isInstance(other))
-		{
-			CarTrafficLight carTrafficLight = CarTrafficLight.class.cast(other);
-			locationLoop: for (Location thisDest : directionRequests)
-			{
-				for (Location otherDest : carTrafficLight.getDestinations())
-				{
-					if (TrafficLight.crossesWith(origin, thisDest, carTrafficLight.getOrigin(), otherDest))
-					{
-						res = true;
-						break locationLoop;
-					}
-				}
-			}
-		}
-		return res;
+		return other.interferesWith(this);
 	}
 
 	@Override
