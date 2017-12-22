@@ -2,12 +2,14 @@ package nl.nhl.software_development.controller.crossing;
 
 import java.time.Duration;
 
+import nl.nhl.software_development.controller.Time;
 import nl.nhl.software_development.controller.net.TrafficLightUpdate;
 
 public class TrainTrafficLight extends TrafficLight
 {
 	private final Location origin;
 	private final TrainCrossingLight connectedLight;
+	private Duration crossTime;
 
 	Location getOrigin()
 	{
@@ -18,6 +20,11 @@ public class TrainTrafficLight extends TrafficLight
 	void setQueueLength(int queueLength)
 	{
 		connectedLight.setQueueLength(queueLength);
+		if (queueLength == 0)
+		{
+			this.status = Status.RED;
+			clearCrossTime();
+		}
 		this.queueLength = queueLength;
 	}
 
@@ -45,7 +52,28 @@ public class TrainTrafficLight extends TrafficLight
 		super(id, status);
 		this.origin = origin;
 		this.connectedLight = connectedLight;
-		cycleTime = Duration.ofSeconds(30);
+		this.cycleTime = Duration.ofSeconds(30);
+		this.crossTime = null;
+	}
+
+	void installCrossTime()
+	{
+		crossTime = Time.getTime().plus(Duration.ofSeconds(10));
+	}
+
+	boolean canCross()
+	{
+		return crossTime.compareTo(Time.getTime()) < 0;
+	}
+
+	boolean hasCrossTime()
+	{
+		return crossTime != null;
+	}
+
+	void clearCrossTime()
+	{
+		crossTime = null;
 	}
 
 	@Override

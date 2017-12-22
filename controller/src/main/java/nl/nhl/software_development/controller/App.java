@@ -234,7 +234,7 @@ public class App implements Runnable
 				}
 				LOGGER.info("Message received, starting logicloop");
 			}
-			executor.scheduleAtFixedRate(p, 0, 2500, TimeUnit.MILLISECONDS);
+			executor.scheduleAtFixedRate(p, 0, 750, TimeUnit.MILLISECONDS);
 		}
 		catch (ParseException ex)
 		{

@@ -274,14 +274,23 @@ public class Crossing
 			LOGGER.debug(String.format("workLights contains %d lights", workLights.size()));
 			if (lights.getId(501).getQueueLength() == 0 && lights.getId(502).getQueueLength() == 0)
 			{
-				lights.getId(501).setStatus(Status.RED);
+				// lights.getId(501).setStatus(Status.RED);
 				lights.getId(601).setStatus(Status.GREEN);
 			}
 			if (trainFree != 0)
 			{
 				LOGGER.debug("Train is free");
+
 				if (lights.getId(501).getQueueLength() != 0 && lights.getId(502).getQueueLength() == 0)
-					lights.getId(501).setStatus(Status.GREEN);
+				{
+					TrainTrafficLight trainLight = TrainTrafficLight.class.cast(lights.getId(501));
+					if (!trainLight.hasCrossTime())
+						trainLight.installCrossTime();
+					else if (trainLight.canCross())
+					{
+						trainLight.setStatus(Status.GREEN);
+					}
+				}
 				lights.getId(601).setStatus(Status.RED);
 			}
 			// TODO: Add logic
